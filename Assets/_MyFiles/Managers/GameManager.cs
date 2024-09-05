@@ -68,5 +68,5 @@ public class GameManager : MonoBehaviour
         }
     }
 }
-
 public enum EEntityType { None, Player, Enemy, NoiseMaker, HidingSpace}
+

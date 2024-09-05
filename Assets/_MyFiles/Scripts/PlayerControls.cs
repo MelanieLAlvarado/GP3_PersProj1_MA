@@ -14,9 +14,12 @@ using Vector3 = UnityEngine.Vector3;
 public class PlayerControls : MonoBehaviour
 {
     [SerializeField] private EEntityType _entityType = EEntityType.Player;
-    [Header("Movement")] private PlayerInputActions _playerInputActions;
+    [SerializeField] private EPlayerAction _action;
+
+    private PlayerInputActions _playerInputActions;
     private CharacterController _playerController;
 
+    [Header("Movement")] 
     [SerializeField]private float _standingHeight;
     [SerializeField]private float _sneakHeight;
     private bool _isSneaking;
@@ -33,6 +36,11 @@ public class PlayerControls : MonoBehaviour
     private float _gravity = -9.8f;
     private bool _defaultMovement = true;
 
+    [Header("Interaction info")]
+    [SerializeField]private GameObject _targetInteractible;
+    [SerializeField] private bool _isInteracting;
+    [SerializeField] private bool _isHiding;
+
     [Header("Camera Options")] 
     [SerializeField] private Camera _playerCam;
 
@@ -40,6 +48,27 @@ public class PlayerControls : MonoBehaviour
     [SerializeField] private float xSensitivity = 30f;
     [SerializeField] private float ySensitivity = 30f;
 
+    public EEntityType GetEntityType() { return _entityType; }
+
+    public GameObject GetTargetInteractible() { return _targetInteractible; }
+    public bool GetIsHiding() { return _isHiding; }
+
+    public void SetTargetInteractible(GameObject interactionToSet) 
+    {
+        _targetInteractible = interactionToSet;
+    }
+    public void ToggleIsHiding() 
+    {
+        _isHiding = !_isHiding;
+        if (_isHiding)
+        {
+            _action = EPlayerAction.hiding;
+        }
+        else
+        {
+            _action = EPlayerAction.walking;
+        }
+    }
     private void Start()
     {
         _playerInputActions = new PlayerInputActions();
@@ -48,12 +77,23 @@ public class PlayerControls : MonoBehaviour
         _playerController = GetComponent<CharacterController>();
 
         _isSneaking = false;
+        _isSprinting = false;
+        speed = walkSpeed;
+        _action = EPlayerAction.walking;
+
+
+        _isInteracting = false;
+        _isHiding = false;
     }
 
     private void FixedUpdate()
     {
-        ProcessMovement();
-        ProcessSneak();
+        ProcessHide();
+        if (!_isHiding)
+        { 
+            ProcessMovement();
+            ProcessSneak();
+        }
     }
 
     private void Update()
@@ -64,12 +104,18 @@ public class PlayerControls : MonoBehaviour
     private void LateUpdate()
     {
         ProcessLook();
-        CheckInteractState();
     }
-
+    private void ProcessHide() 
+    {
+        //at this point, the targetinteractible should be the hiding interaction
+        if (_isHiding && _targetInteractible.GetComponent<HidingInteraction>()) 
+        {
+            transform.position = _targetInteractible.GetComponent<HidingInteraction>().GetHidePos().position;
+        }
+    }
     private void ProcessMovement()
     {
-        if (_defaultMovement == true)
+        if (_defaultMovement == true && !_isHiding)
         {
             Vector2 inputVector = _playerInputActions.Player.Move.ReadValue<Vector2>();
             Vector3 movementDirection = new Vector3(inputVector.x, 0, inputVector.y);
@@ -88,7 +134,7 @@ public class PlayerControls : MonoBehaviour
     private void ProcessSneak()
     {
         float heightChange;
-        if (_isSneaking == true)
+        if (_isSneaking == true && !_isHiding)
         {
             heightChange = _sneakHeight;
         }
@@ -112,40 +158,50 @@ public class PlayerControls : MonoBehaviour
         _playerCam.transform.localRotation = Quaternion.Euler(_xRotation, 0, 0);
         transform.Rotate(Vector3.up * (Time.deltaTime * lookVector.x) * xSensitivity);
     }
-
-    private void CheckInteractState()
-    {
-        //Might do in a separate script
-    }
-
     public void Sprint(InputAction.CallbackContext context)
     {
-        if (context.performed && _isSneaking == false)
+        if (context.performed && _isSneaking == false && _action != EPlayerAction.hiding)
         {
             _isSprinting = true;
+            _action = EPlayerAction.sprinting;
             speed = sprintSpeed;
         }
 
-        if (context.canceled && _isSneaking == false)
+        if (context.canceled && _isSneaking == false && _action != EPlayerAction.hiding)
         {
             _isSprinting = false;
+            _action = EPlayerAction.walking;
             speed = walkSpeed;
         }
     }
 
     public void Sneak(InputAction.CallbackContext context)
     {
-        if (context.performed && _isGrounded == true)
+        if (context.performed && _isGrounded == true && _action != EPlayerAction.hiding)
         {
             _isSneaking = true;
+            _action = EPlayerAction.sneaking;
             speed = sneakSpeed;
         }
 
-        if (context.canceled)
+        if (context.canceled && _action != EPlayerAction.hiding)
         {
             _isSneaking = false;
+            _action = EPlayerAction.walking;
             speed = walkSpeed;
         }
     }
+    public void Interact(InputAction.CallbackContext context)
+    {
+        if (context.performed && _targetInteractible) 
+        {
+            _isInteracting = true;
+            _targetInteractible.GetComponent<IInterActions>().OnInteraction();
+        }
+        if (context.canceled)
+        {
+            _isInteracting = false;
+        }
+    }
 }
-
+public enum EPlayerAction { idle, walking, sneaking, sprinting, hiding } //might add more or convert hiding into a bool

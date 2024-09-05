@@ -2,15 +2,6 @@ using UnityEngine;
 
 public class UIManager : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    //build noisemeter visual and interaction text here.
+    //might add a debug menu as well
 }

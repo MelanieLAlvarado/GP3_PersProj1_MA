@@ -268,8 +268,11 @@ MonoBehaviour:
   _sneakHeight: 1
   sneakSpeed: 2
   walkSpeed: 6
-  sprintSpeed: 9
+  sprintSpeed: 10
   speed: 5
+  _targetInteractible: {fileID: 0}
+  _isInteracting: 0
+  _isHiding: 0
   _playerCam: {fileID: 5732449467004988061}
   xSensitivity: 30
   ySensitivity: 30
@@ -332,7 +335,19 @@ MonoBehaviour:
     m_ActionId: 667c5be3-6ec5-430c-9ecf-58082575d0a8
     m_ActionName: 'Player/Look[/Mouse/delta]'
   - m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 5317835997269765029}
+        m_TargetAssemblyTypeName: PlayerControls, Assembly-CSharp
+        m_MethodName: Interact
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_ActionId: 4b90cbf6-237e-4cc7-949e-75472f698a02
     m_ActionName: 'Player/Interact[/Keyboard/e]'
   - m_PersistentCalls:
