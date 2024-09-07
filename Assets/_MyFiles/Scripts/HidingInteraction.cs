@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class HidingInteraction : MonoBehaviour, IInterActions
@@ -22,14 +23,22 @@ public class HidingInteraction : MonoBehaviour, IInterActions
             if (player.GetIsHiding() == false)
             {
                 //save player position prior to hiding
+                player.SetPrevHidePos(player.transform.position);
+                Debug.Log("HIDE HERE");
             }
             player.ToggleIsHiding();
-            if (player.GetIsHiding() == false)
+            if (player.GetIsHiding() == false)//place player at last unhidden position (slerp when possible)
             {
-                //teleport to the previous position of the player b4 hiding
+                //StartCoroutine(PutPlayerAtUnhiddenPos());
             }
-            Debug.Log("HIDE HERE");
         }
+    }
+    private IEnumerator PutPlayerAtUnhiddenPos() 
+    {
+        yield return new WaitForSeconds(0.25f);
+        Debug.Log("Unhide");
+        player.transform.position = player.GetPrevHidePos();
+        StopCoroutine(PutPlayerAtUnhiddenPos());
     }
     private void OnTriggerEnter(Collider other)
     {

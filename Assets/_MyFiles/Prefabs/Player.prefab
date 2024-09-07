@@ -152,7 +152,7 @@ GameObject:
   - component: {fileID: 5317835997269765029}
   - component: {fileID: 6329497128120016208}
   - component: {fileID: 5577529953420082110}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -264,6 +264,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _entityType: 1
+  _playerState: 0
   _standingHeight: 2
   _sneakHeight: 1
   sneakSpeed: 2

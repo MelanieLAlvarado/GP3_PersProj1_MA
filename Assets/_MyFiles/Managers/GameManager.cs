@@ -22,7 +22,15 @@ public class GameManager : MonoBehaviour
             Debug.LogError("Multiple GameManagers found. Deleting copy...");
             Destroy(this);
         }
+        else
+        { 
+            m_Instance = this;
+        }
     }
+    public GameObject GetPlayer() { return _player; }
+    public EnemyManager GetEnemyManager() { return enemyManager; }
+
+    public UIManager GetUIManager() { return uIManager; }
 
     void Start()
     {
@@ -49,11 +57,6 @@ public class GameManager : MonoBehaviour
         uIManager = gameObject.AddComponent<UIManager>();
     }
 
-    public GameObject GetPlayer() { return _player; }
-    
-    public EnemyManager GetEnemyManager() { return enemyManager; }
-    
-    public UIManager GetUIManager() { return uIManager; }
     private void DestroyExtraManagers()//WIP to make nicer
     {
         if (this.GetComponent<EnemyManager>() != enemyManager)

@@ -14,7 +14,7 @@ using Vector3 = UnityEngine.Vector3;
 public class PlayerControls : MonoBehaviour
 {
     [SerializeField] private EEntityType _entityType = EEntityType.Player;
-    [SerializeField] private EPlayerAction _action;
+    [SerializeField] private EPlayerState _playerState;
 
     private PlayerInputActions _playerInputActions;
     private CharacterController _playerController;
@@ -40,6 +40,7 @@ public class PlayerControls : MonoBehaviour
     [SerializeField]private GameObject _targetInteractible;
     [SerializeField] private bool _isInteracting;
     [SerializeField] private bool _isHiding;
+    private Vector3 _prevHidePos;
 
     [Header("Camera Options")] 
     [SerializeField] private Camera _playerCam;
@@ -49,9 +50,12 @@ public class PlayerControls : MonoBehaviour
     [SerializeField] private float ySensitivity = 30f;
 
     public EEntityType GetEntityType() { return _entityType; }
+    public EPlayerState GetPlayerState() { return _playerState; }
 
     public GameObject GetTargetInteractible() { return _targetInteractible; }
     public bool GetIsHiding() { return _isHiding; }
+    public Vector3 GetPrevHidePos() { return _prevHidePos; }
+    public void SetPrevHidePos(Vector3 posToSet) { _prevHidePos = posToSet; }
 
     public void SetTargetInteractible(GameObject interactionToSet) 
     {
@@ -62,11 +66,11 @@ public class PlayerControls : MonoBehaviour
         _isHiding = !_isHiding;
         if (_isHiding)
         {
-            _action = EPlayerAction.hiding;
+            _playerState = EPlayerState.hiding;
         }
         else
         {
-            _action = EPlayerAction.walking;
+            _playerState = EPlayerState.walking;
         }
     }
     private void Start()
@@ -79,7 +83,7 @@ public class PlayerControls : MonoBehaviour
         _isSneaking = false;
         _isSprinting = false;
         speed = walkSpeed;
-        _action = EPlayerAction.walking;
+        _playerState = EPlayerState.walking;
 
 
         _isInteracting = false;
@@ -88,12 +92,13 @@ public class PlayerControls : MonoBehaviour
 
     private void FixedUpdate()
     {
-        ProcessHide();
-        if (!_isHiding)
-        { 
-            ProcessMovement();
-            ProcessSneak();
+        if (_isHiding) 
+        {
+            ProcessHide();
+            return;
         }
+        ProcessMovement();
+        ProcessSneak();
     }
 
     private void Update()
@@ -108,9 +113,10 @@ public class PlayerControls : MonoBehaviour
     private void ProcessHide() 
     {
         //at this point, the targetinteractible should be the hiding interaction
-        if (_isHiding && _targetInteractible.GetComponent<HidingInteraction>()) 
+        if (_isHiding && _targetInteractible.GetComponent<HidingInteraction>())
         {
             transform.position = _targetInteractible.GetComponent<HidingInteraction>().GetHidePos().position;
+            Debug.Log("ProcessHide...");
         }
     }
     private void ProcessMovement()
@@ -160,34 +166,34 @@ public class PlayerControls : MonoBehaviour
     }
     public void Sprint(InputAction.CallbackContext context)
     {
-        if (context.performed && _isSneaking == false && _action != EPlayerAction.hiding)
+        if (context.performed && _isSneaking == false && _playerState != EPlayerState.hiding)
         {
             _isSprinting = true;
-            _action = EPlayerAction.sprinting;
+            _playerState = EPlayerState.sprinting;
             speed = sprintSpeed;
         }
 
-        if (context.canceled && _isSneaking == false && _action != EPlayerAction.hiding)
+        if (context.canceled && _isSneaking == false && _playerState != EPlayerState.hiding)
         {
             _isSprinting = false;
-            _action = EPlayerAction.walking;
+            _playerState = EPlayerState.walking;
             speed = walkSpeed;
         }
     }
 
     public void Sneak(InputAction.CallbackContext context)
     {
-        if (context.performed && _isGrounded == true && _action != EPlayerAction.hiding)
+        if (context.performed && _isGrounded == true && _playerState != EPlayerState.hiding)
         {
             _isSneaking = true;
-            _action = EPlayerAction.sneaking;
+            _playerState = EPlayerState.sneaking;
             speed = sneakSpeed;
         }
 
-        if (context.canceled && _action != EPlayerAction.hiding)
+        if (context.canceled && _playerState != EPlayerState.hiding)
         {
             _isSneaking = false;
-            _action = EPlayerAction.walking;
+            _playerState = EPlayerState.walking;
             speed = walkSpeed;
         }
     }
@@ -204,4 +210,4 @@ public class PlayerControls : MonoBehaviour
         }
     }
 }
-public enum EPlayerAction { idle, walking, sneaking, sprinting, hiding } //might add more or convert hiding into a bool
+public enum EPlayerState { idle, walking, sneaking, sprinting, hiding } //might add more or convert hiding into a bool
