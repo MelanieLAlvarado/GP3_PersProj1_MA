@@ -60,11 +60,11 @@ public class EnemyAI : MonoBehaviour
     private void Update()
     {
         ///separate second part into a separate piece... (will determine if enemy chases player or not while hiding)
-        if (FieldOfViewCheck() && _playerRef.GetComponent<PlayerControls>().GetPlayerState() != EPlayerState.hiding)
+        if (FieldOfViewCheck() && !PlayerHiddenCheck())
         {
             SetEnemyState(EEnemyState.chase);
         }
-        else if (_audibleNoiseList.Count != 0)
+        else if (_audibleNoiseList.Count != 0)//items will be added to list via Noise Manager (and maybe EnemyManager too)
         {
             SetEnemyState(EEnemyState.curious);
         }
@@ -124,6 +124,7 @@ public class EnemyAI : MonoBehaviour
                 break;
             case EEnemyState.curious:
                 //swap target to an audible sound
+                ChooseNoiseTarget();
                 InvestigateNoise();
                 GoToTarget();
                 break;
@@ -146,6 +147,7 @@ public class EnemyAI : MonoBehaviour
     private void GoToTarget() 
     {
         Debug.Log("going to target...");
+        _enemy_NavMeshAgent.destination = _targetPos.transform.position;
         Vector3 currentMove = transform.position - _prevPosition;
         _currentSpeed = currentMove.magnitude/Time.deltaTime;
         _prevPosition = transform.position;
@@ -155,7 +157,7 @@ public class EnemyAI : MonoBehaviour
         if (FieldOfViewCheck() && _targetPos != null && _playerRef)
         {
             _targetPos = _playerRef.transform;
-            _enemy_NavMeshAgent.destination = _targetPos.transform.position;
+            //_enemy_NavMeshAgent.destination = _targetPos.transform.position;
         }
     }
     private void CheckHidingPlace() 
@@ -163,6 +165,36 @@ public class EnemyAI : MonoBehaviour
         //will include chasing the player for a short time after leaving the visual field
         //  and will include a way to decide to pull player out of hiding spots if the player
         //  was seen as they hid. 
+    }
+    private void ChooseNoiseTarget()
+    {
+        if (_audibleNoiseList.Count > 0) 
+        {
+            GameObject noiseTemp = _audibleNoiseList[0];
+            for (int i = 1;i < _audibleNoiseList.Count ; i++)
+            {
+                /*
+                //NoiseScript noiseTempScript = noiseTemp.GetComponent<NoiseScript>().GetNoiseLevel();
+                NoiseScript iNoiseScript = _audibleNoiseList[i].GetComponent<NoiseScript>();
+                if(noiseTempScript.GetNoiseLevel() < iNoiseScript.GetNoiseLevel())
+                {
+                    noiseTemp = _audibleNoiseList[i];
+                    continue;
+                } 
+                else if ((noiseTempScript.GetNoiseLevel() == iNoiseScript.GetNoiseLevel())
+                {
+                    float tempDistance = Vector3.Distance(transform.position, noiseTemp.position);
+                    float iDistance = Vector3.Distance(transform.position, _audibleNoiseList[i].position);
+                    if(tempDistance > iDistance)
+                    {
+                        noiseTemp = _audibleNoiseList[i];
+                    }
+                    continue;
+                }
+                */
+            }
+            _targetPos = noiseTemp.transform;
+        }
     }
     private void InvestigateNoise() 
     {
@@ -226,6 +258,24 @@ public class EnemyAI : MonoBehaviour
         }
         return false; /// There's nothing in the sphere as a visual target mask or in the angle of the FOV
     }
+    private bool PlayerHiddenCheck() 
+    {
+        EPlayerState tempPlayerState = _playerRef.GetComponent<PlayerControls>().GetPlayerState();
+        if (tempPlayerState == EPlayerState.hiding /*&& timer check*/) 
+        {
+            return true; 
+        }
+        return false;
+    }
+    /*public bool HearingCheck(GameObject objToCheck) 
+    {
+        float hearingDist = Vector3.Distance(transform.position, objToCheck.position);
+        if (hearingDist < _hearingRange)
+        {
+            return true;
+        }
+        return false;
+    }*/
     private bool RandomPoint(Vector3 center, float range, out Vector3 result) 
     {
         Vector3 randomPoint = center + Random.insideUnitSphere * range;

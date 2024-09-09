@@ -764,7 +764,7 @@ MonoBehaviour:
   _hearingRange: 15
   _hRange: {fileID: 0}
   _audibleNoiseList: []
-  _visualRadius: 5
+  _visualRadius: 10
   _visualAngle: 100
   _visualTargetMask:
     serializedVersion: 2
