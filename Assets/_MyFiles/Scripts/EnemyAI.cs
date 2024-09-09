@@ -8,7 +8,7 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] EEnemyState _enemyState;
     [Range(0f, 10f)][SerializeField] private float _waitTime;
     [Range(1.0f, 30.0f)][SerializeField] float _roamingRange = 20f;
-    [SerializeField] private Transform _callPos;
+    [SerializeField] private Transform _tempCallPos;
 
     [Header("Manager Info [Read Only]")]
     [SerializeField] EnemyManager _enemyManager;
@@ -24,9 +24,11 @@ public class EnemyAI : MonoBehaviour
 
     [Header("Hearing Range Options")]
     [Range(1.0f, 30.0f)][SerializeField] float _hearingRange = 15f;
-    [SerializeField] private GameObject _hRange; //visual of hearing range (temp)
+    [Range(0f, 100f)][SerializeField] float _hearingThreshold = 40f;
+    //[SerializeField] private GameObject _hRange; ///visual of hearing range (temp)
 
     [SerializeField] private List<GameObject> _audibleNoiseList = new List<GameObject>();
+    [SerializeField] private List<float> _noiseCalculatedValues = new List<float>();
 
     ///Might move to its own script... Field of View
     [Header("Field of View Options")]
@@ -40,18 +42,16 @@ public class EnemyAI : MonoBehaviour
 
     //may add a timer to follow, even after player leaves visual field...
     //and a way for the enemy to face the player when lost.
-
     public float GetVisualRadius() { return _visualRadius; }
     public float GetVisualAngle() { return _visualAngle; }
     public bool GetCanSeePlayer() { return FieldOfViewCheck(); }
     public Transform GetTargetPos() { return _targetPos; }
-    public void AddToNoiseList(GameObject noiseToAdd) 
-    {
-        _audibleNoiseList.Insert(_audibleNoiseList.Count, noiseToAdd);
-    }
     private void Start()
     {
         StartCoroutine(FindPlayerRef());
+        _tempCallPos = new GameObject("TempPos").transform;
+        _tempCallPos.position = transform.position;
+
         _prevPosition = transform.position;
         _enemy_NavMeshAgent = GetComponent<NavMeshAgent>();
         SetEnemyState(EEnemyState.wait);
@@ -64,7 +64,7 @@ public class EnemyAI : MonoBehaviour
         {
             SetEnemyState(EEnemyState.chase);
         }
-        else if (_audibleNoiseList.Count != 0)//items will be added to list via Noise Manager (and maybe EnemyManager too)
+        else if (_audibleNoiseList.Count != 0)
         {
             SetEnemyState(EEnemyState.curious);
         }
@@ -113,18 +113,18 @@ public class EnemyAI : MonoBehaviour
         {
             case EEnemyState.wait:
                 ///do nothing
-                _targetPos = _callPos;
+
+                /*_callPos = new Vector3(transform.position.x, transform.position.y, transform.position.z);
+                _targetPos = _callPos;*/
                 //Will add a wait function eventually...
                 _enemyState = EEnemyState.roam;
                 break;
             case EEnemyState.roam:
-                Debug.Log("FLAG 1: start roam");
-                Roam(); //WIP
+                Roam(); //Add wait functionality
                 GoToTarget();
                 break;
             case EEnemyState.curious:
                 //swap target to an audible sound
-                ChooseNoiseTarget();
                 InvestigateNoise();
                 GoToTarget();
                 break;
@@ -137,16 +137,10 @@ public class EnemyAI : MonoBehaviour
                 CheckHidingPlace();
                 break;
         }
-        //when @ first target pos... -> go to wait (unless player)
-        /*
-        NoiseList.removeAt(0);
-        NoiseList.Insert(NoiseList.count, newSound)
-
-         */
     }
     private void GoToTarget() 
     {
-        Debug.Log("going to target...");
+        //Debug.Log("going to target...");
         _enemy_NavMeshAgent.destination = _targetPos.transform.position;
         Vector3 currentMove = transform.position - _prevPosition;
         _currentSpeed = currentMove.magnitude/Time.deltaTime;
@@ -156,8 +150,13 @@ public class EnemyAI : MonoBehaviour
     {
         if (FieldOfViewCheck() && _targetPos != null && _playerRef)
         {
+            Debug.Log("Following Player!...");
             _targetPos = _playerRef.transform;
             //_enemy_NavMeshAgent.destination = _targetPos.transform.position;
+        }
+        else 
+        {
+            SetEnemyState(EEnemyState.wait);
         }
     }
     private void CheckHidingPlace() 
@@ -166,46 +165,51 @@ public class EnemyAI : MonoBehaviour
         //  and will include a way to decide to pull player out of hiding spots if the player
         //  was seen as they hid. 
     }
+    private void CalculateSoundValues()
+    {
+        if (_audibleNoiseList.Count > 0)
+        {
+            GameObject noiseTemp = _audibleNoiseList[0];
+            List<float> distancesFromEnemy = new List<float>();
+            for (int i = 0; i < _audibleNoiseList.Count; i++) //calculate sound values
+            {
+                float iDistance = Vector3.Distance(transform.position, _audibleNoiseList[i].transform.position);
+                distancesFromEnemy.Add(iDistance);
+
+                float distMultiplier = _hearingRange/iDistance;
+
+                NoiseComponent noiseComp = _audibleNoiseList[i].GetComponent<NoiseComponent>();
+                _noiseCalculatedValues.Add(noiseComp.GetRawSoundAmount() * distMultiplier);
+            }
+        }
+    }
     private void ChooseNoiseTarget()
     {
         if (_audibleNoiseList.Count > 0) 
         {
-            GameObject noiseTemp = _audibleNoiseList[0];
-            for (int i = 1;i < _audibleNoiseList.Count ; i++)
+            float noiseNum = _noiseCalculatedValues[0];
+            _targetPos = _audibleNoiseList[0].transform;
+            for (int i = 1;i < _audibleNoiseList.Count ; i++) //choose the sound with the highest noise
             {
-                /*
-                //NoiseScript noiseTempScript = noiseTemp.GetComponent<NoiseScript>().GetNoiseLevel();
-                NoiseScript iNoiseScript = _audibleNoiseList[i].GetComponent<NoiseScript>();
-                if(noiseTempScript.GetNoiseLevel() < iNoiseScript.GetNoiseLevel())
+                float iNoiseNum = _noiseCalculatedValues[i];
+                if (noiseNum <= iNoiseNum)
                 {
-                    noiseTemp = _audibleNoiseList[i];
-                    continue;
-                } 
-                else if ((noiseTempScript.GetNoiseLevel() == iNoiseScript.GetNoiseLevel())
-                {
-                    float tempDistance = Vector3.Distance(transform.position, noiseTemp.position);
-                    float iDistance = Vector3.Distance(transform.position, _audibleNoiseList[i].position);
-                    if(tempDistance > iDistance)
-                    {
-                        noiseTemp = _audibleNoiseList[i];
-                    }
+                    noiseNum = iNoiseNum;
+                    _targetPos = _audibleNoiseList[i].transform;
                     continue;
                 }
-                */
             }
-            _targetPos = noiseTemp.transform;
         }
     }
     private void InvestigateNoise() 
     {
         Debug.Log("Investigating noise...");
-        _targetPos = _audibleNoiseList[0].transform;
         _enemy_NavMeshAgent.destination = _targetPos.transform.position;
         float targetDist = Vector3.Distance(_prevPosition, _targetPos.position);
-        if (targetDist <= _enemy_NavMeshAgent.stoppingDistance) 
+        Debug.Log(targetDist);
+        if (targetDist < _enemy_NavMeshAgent.stoppingDistance) 
         {
-            Debug.Log("At current target...");
-            _audibleNoiseList.RemoveAt(0);
+            _audibleNoiseList.Clear();
             SetEnemyState(EEnemyState.wait);
         }
     }
@@ -213,12 +217,11 @@ public class EnemyAI : MonoBehaviour
     {
         if (_targetPos != null)
         {
-            Debug.Log("Roaming...");
+            //Debug.Log("Roaming...");
+            _targetPos = _tempCallPos;
             float roamDist = Vector3.Distance(transform.position, _targetPos.position);
-            Debug.Log(roamDist);
-            _targetPos = _callPos;
             _targetPos.position = new Vector3(_targetPos.position.x, transform.position.y, _targetPos.position.z);
-            if (roamDist <= _enemy_NavMeshAgent.stoppingDistance)
+            if (roamDist < _enemy_NavMeshAgent.stoppingDistance)
             {
                 Vector3 point;
                 if (RandomPoint(transform.position, _roamingRange, out point))
@@ -232,8 +235,8 @@ public class EnemyAI : MonoBehaviour
         }
         else
         {
-            _callPos.position = transform.position;
-            _targetPos = _callPos;
+            _targetPos = _tempCallPos;
+            _enemy_NavMeshAgent.destination = _targetPos.transform.position;
         }
     }
     private bool FieldOfViewCheck() 
@@ -267,15 +270,25 @@ public class EnemyAI : MonoBehaviour
         }
         return false;
     }
-    /*public bool HearingCheck(GameObject objToCheck) 
+    public void HearingCheck(GameObject objToCheck) 
     {
-        float hearingDist = Vector3.Distance(transform.position, objToCheck.position);
+        Debug.Log("Checking object distance...");
+        float hearingDist = Vector3.Distance(transform.position, objToCheck.transform.position);
         if (hearingDist < _hearingRange)
         {
-            return true;
+            if (!_audibleNoiseList.Contains(objToCheck))
+            {
+                _audibleNoiseList.Add(objToCheck);
+                CalculateSoundValues();
+                ChooseNoiseTarget();
+            }
         }
-        return false;
-    }*/
+        else if (_audibleNoiseList.Contains(objToCheck))
+        {
+            _audibleNoiseList.Remove(objToCheck);
+        }
+    }
+
     private bool RandomPoint(Vector3 center, float range, out Vector3 result) 
     {
         Vector3 randomPoint = center + Random.insideUnitSphere * range;
@@ -287,6 +300,12 @@ public class EnemyAI : MonoBehaviour
         }
         result = Vector3.zero;
         return false;
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(transform.position, _hearingRange);
     }
 }
 public enum EEnemyState { wait, roam, curious, chase}

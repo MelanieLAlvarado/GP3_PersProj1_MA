@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Numerics;
-using Unity.Android.Gradle.Manifest;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.TextCore.Text;
@@ -36,18 +35,26 @@ public class PlayerControls : MonoBehaviour
     private float _gravity = -9.8f;
     private bool _defaultMovement = true;
 
-    [Header("Interaction info")]
-    [SerializeField]private GameObject _targetInteractible;
-    [SerializeField] private bool _isInteracting;
-    [SerializeField] private bool _isHiding;
-    private Vector3 _prevHidePos;
-
     [Header("Camera Options")] 
     [SerializeField] private Camera _playerCam;
 
     private float _xRotation = 0f;
     [SerializeField] private float xSensitivity = 30f;
     [SerializeField] private float ySensitivity = 30f;
+    
+    [Header("Interaction info")]
+    [SerializeField]private GameObject _targetInteractible;
+    [SerializeField] private bool _isInteracting;
+    [SerializeField] private bool _isHiding;
+    private Vector3 _prevHidePos;
+
+    [Header("Noise Options")]
+    private NoiseComponent _noiseComponent;
+    [SerializeField][Range(0, 1)] private float _idleMultiplier = 0f;
+    [SerializeField][Range(0, 1)] private float _sneakMultiplier = 0.2f;
+    [SerializeField][Range(0, 1)] private float _walkMultiplier = 0.4f;
+    [SerializeField][Range(0, 1)] private float _sprintMultiplier = 0.6f;
+
 
     public EEntityType GetEntityType() { return _entityType; }
     public EPlayerState GetPlayerState() { return _playerState; }
@@ -79,6 +86,8 @@ public class PlayerControls : MonoBehaviour
         _playerInputActions.Player.Enable();
         //programmatically add playerinputactions to actions list and connect unity events??
         _playerController = GetComponent<CharacterController>();
+
+        _noiseComponent = GetComponent<NoiseComponent>();
 
         _isSneaking = false;
         _isSprinting = false;
@@ -135,6 +144,7 @@ public class PlayerControls : MonoBehaviour
 
             _playerController.Move(Time.deltaTime * playerVelocity);
         }
+        ProcessNoise();
     }
 
     private void ProcessSneak()
@@ -154,6 +164,31 @@ public class PlayerControls : MonoBehaviour
         }
     }
 
+    private void ProcessNoise() 
+    {
+        if (!_noiseComponent)
+        {
+            return;
+        }
+        switch (_playerState)
+        {
+            case EPlayerState.idle:
+                _noiseComponent.TriggerNoise(_idleMultiplier);
+                break;
+            case EPlayerState.walking:
+                _noiseComponent.TriggerNoise(_walkMultiplier);
+                break;
+            case EPlayerState.sneaking:
+                _noiseComponent.TriggerNoise(_sneakMultiplier);
+                break;
+            case EPlayerState.sprinting:
+                _noiseComponent.TriggerNoise(_sprintMultiplier);
+                break;
+            case EPlayerState.hiding:
+                _noiseComponent.TriggerNoise(_idleMultiplier);
+                break;
+        }
+    }
     private void ProcessLook()
     {
         Vector2 lookVector = _playerInputActions.Player.Look.ReadValue<Vector2>();

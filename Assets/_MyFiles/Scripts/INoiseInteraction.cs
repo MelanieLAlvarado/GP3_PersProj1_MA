@@ -1,8 +1,11 @@
 using UnityEngine;
 
+[RequireComponent(typeof(NoiseComponent))]
 public class INoiseInteraction : MonoBehaviour, IInterActions
 {
     PlayerControls player;
+    NoiseComponent noiseComponent;
+    [SerializeField] [Range(0, 1)] private float noiseMultiplier = 0.8f;
     public EEntityType GetEntityType()
     {
         return EEntityType.NoiseMaker;
@@ -16,7 +19,11 @@ public class INoiseInteraction : MonoBehaviour, IInterActions
         if (player)
         {
             //spawn transform/ping location here for enemy
-            Debug.Log("NOISE HERE");
+            if (noiseComponent = this.GetComponent<NoiseComponent>())
+            {
+                Debug.Log("NOISE HERE");
+                noiseComponent.TriggerNoise(noiseMultiplier);
+            }
         }
     }
     private void OnTriggerEnter(Collider other)
