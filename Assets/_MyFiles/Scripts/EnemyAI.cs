@@ -143,6 +143,10 @@ public class EnemyAI : MonoBehaviour
                 {
                     CalculateSoundValues();
                     ChooseNoiseTarget();
+
+                    //HearingComponent hearingComponent = GetComponent<HearingComponent>()
+                    //_noiseCalculatedValues = CalculateSoundValues(_audibleNoiseList, _hearingRange)
+                    //_targetPos = ChooseNoiseTarget(_audibleNoiseList, _noiseCalculatedValues);
                 }
                 InvestigateNoise();
                 GoToTarget();
