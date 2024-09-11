@@ -5,11 +5,17 @@ public class NoiseComponent : MonoBehaviour
     private NoiseManager noiseManager;
     private float rawSoundAmount;
     private float currentSoundMultiplier;
+    private bool isNoiseTriggered = false;
+
     public float GetSoundMultiplier()  { return currentSoundMultiplier; }
     public float GetRawSoundAmount() { return rawSoundAmount; }
     private void Start()
     {
         noiseManager = GameManager.m_Instance.GetNoiseManager();
+    }
+    public void GetIsNoiseTriggered() 
+    {
+        
     }
     public void TriggerNoise(float soundMultiplier)
     {
@@ -20,6 +26,6 @@ public class NoiseComponent : MonoBehaviour
         {
             noiseManager = GameManager.m_Instance.GetNoiseManager();
         }
-        noiseManager.AddNoise(this.gameObject);
+        noiseManager.AddActiveNoiseSource(this.gameObject);
     }
 }

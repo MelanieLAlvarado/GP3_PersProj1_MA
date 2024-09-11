@@ -18,7 +18,7 @@ public class INoiseInteraction : MonoBehaviour, IInterActions
     {
         if (player)
         {
-            //spawn transform/ping location here for enemy
+            ///pinging enemy
             if (noiseComponent = this.GetComponent<NoiseComponent>())
             {
                 Debug.Log("NOISE HERE");

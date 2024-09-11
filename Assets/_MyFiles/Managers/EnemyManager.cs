@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -37,13 +38,31 @@ public class EnemyManager : MonoBehaviour
             enemies.Add(enemy);
         }
     }
-    public void CheckEnemiesHearingRanges()
+    public void CheckEnemiesHearingRanges(List<GameObject> triggeredNoiseObjs)
     {
         Debug.Log("Checking all enemies...");
         for (int i = 0; i < enemies.Count; i++)
         {
-            EnemyAI iEnemyAI = enemies[0].GetComponent<EnemyAI>();
-            noiseManager.CheckNoiseInEnemyRange(iEnemyAI);
+            Debug.Log(enemies[i]);
+            EnemyAI iEnemyAI = enemies[i].GetComponent<EnemyAI>();
+
+            for (int j = 0; j < triggeredNoiseObjs.Count; j++)
+            {
+                Debug.Log("Checking all noises...");
+                Debug.Log(triggeredNoiseObjs[j]);
+                Debug.Log(iEnemyAI.GetNoisesObjsInRangeList().Count);
+                
+                if (iEnemyAI.GetNoisesObjsInRangeList().Find(x => x.ToString() == triggeredNoiseObjs[j].ToString())) 
+                {
+                    Debug.Log("Is Valid!!! [TEST]");
+                }
+
+                if (iEnemyAI.GetNoisesObjsInRangeList().Contains(triggeredNoiseObjs[j])) 
+                {
+                    iEnemyAI.AddTriggeredNoiseToList(triggeredNoiseObjs[j]);
+                }
+            }
         }
+        //clear/remove noise list objs????
     }
 }

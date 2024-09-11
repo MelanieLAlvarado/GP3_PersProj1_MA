@@ -6,7 +6,7 @@ using UnityEngine;
 public class NoiseManager : MonoBehaviour
 {
     private EnemyManager enemyManager;
-    private List<GameObject> noiseObjects = new List<GameObject>();
+    private List<GameObject> activeNoiseObjs = new List<GameObject>();
     //[SerializeField] private List<GameObject> _audibleNoiseList = new List<GameObject>();
 
     private void Start()
@@ -23,24 +23,14 @@ public class NoiseManager : MonoBehaviour
         }
         yield return new WaitForEndOfFrame();
     }
-    public void AddNoise(GameObject objToAdd) 
+    public void AddActiveNoiseSource(GameObject objToAdd) 
     {
         Debug.Log("Noise added to NoiseManager!");
-        noiseObjects.Add(objToAdd);
-        enemyManager.CheckEnemiesHearingRanges();
+        activeNoiseObjs.Add(objToAdd);
+        enemyManager.CheckEnemiesHearingRanges(activeNoiseObjs);
     }
-    /*public void RemoveNoise(GameObject objToRemove)
+    public void RemoveNoise(GameObject objToRemove)
     {
-        noiseObjects.Remove(objToRemove);
-        enemyManager.CheckEnemiesHearingRanges();
-    }*/
-    public void CheckNoiseInEnemyRange(EnemyAI enemyToCheck)
-    {
-        Debug.Log("Checking all noises...");
-
-        for (int i = 0; i < noiseObjects.Count; i++)
-        {
-            enemyToCheck.HearingCheck(noiseObjects[i]);
-        }
+        activeNoiseObjs.Remove(objToRemove);
     }
 }

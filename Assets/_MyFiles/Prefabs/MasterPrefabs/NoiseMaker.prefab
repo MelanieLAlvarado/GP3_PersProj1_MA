@@ -13,6 +13,8 @@ GameObject:
   - component: {fileID: 7117381809728751981}
   - component: {fileID: 4188556172467776723}
   - component: {fileID: 9188888692909521178}
+  - component: {fileID: 5302807220450348652}
+  - component: {fileID: 3046540912253562700}
   m_Layer: 0
   m_Name: NoiseMaker
   m_TagString: Untagged
@@ -121,3 +123,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 36893da4bf4a3984497b227f85a8f173, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  noiseMultiplier: 0.5
+--- !u!114 &5302807220450348652
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2571654918593413409}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8e5a1cbc76ae9d4f8ed4af56f8efd0e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!135 &3046540912253562700
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2571654918593413409}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.5
+  m_Center: {x: 0, y: 0, z: 0}

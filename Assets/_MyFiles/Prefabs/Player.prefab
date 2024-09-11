@@ -271,12 +271,16 @@ MonoBehaviour:
   walkSpeed: 6
   sprintSpeed: 10
   speed: 5
-  _targetInteractible: {fileID: 0}
-  _isInteracting: 0
-  _isHiding: 0
   _playerCam: {fileID: 5732449467004988061}
   xSensitivity: 30
   ySensitivity: 30
+  _targetInteractible: {fileID: 0}
+  _isInteracting: 0
+  _isHiding: 0
+  _idleMultiplier: 0
+  _sneakMultiplier: 0.2
+  _walkMultiplier: 0.4
+  _sprintMultiplier: 0.6
 --- !u!143 &6329497128120016208
 CharacterController:
   m_ObjectHideFlags: 0
