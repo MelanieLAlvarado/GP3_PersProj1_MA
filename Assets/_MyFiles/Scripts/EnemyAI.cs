@@ -4,19 +4,21 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
 [RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(TimerComponent))]
 //[RequireComponent(typeof(Rigidbody))]
 public class EnemyAI : MonoBehaviour
 {
+    private TimerComponent _timerComponent;
     [SerializeField] EEnemyState _enemyState;
-    [Range(0f, 10f)][SerializeField] private float _waitTime;
-    [Range(1.0f, 30.0f)][SerializeField] float _roamingRange = 20f;
-    [SerializeField] private Transform _tempCallPos;
+    [Range(0f, 10f)][SerializeField] private float waitTime = 1.5f;
+    [Range(1.0f, 30.0f)][SerializeField] float roamingRange = 20f;
 
     [Header("Manager Info [Read Only]")]
     [SerializeField] EnemyManager _enemyManager;
 
     [Header("Position Info [Read Only]")]
     [SerializeField] GameObject _playerRef;
+    [SerializeField] private Transform _tempCallPos;
     [SerializeField] private Transform _targetPos;
 
     [Header("Speed Options")]
@@ -24,6 +26,7 @@ public class EnemyAI : MonoBehaviour
     private Vector3 _prevPosition;
     [SerializeField] private float _currentSpeed;
 
+    ///Might move to its own script... Hearing Component
     [Header("Hearing Range Options")]
     [Range(1.0f, 30.0f)][SerializeField] float _hearingRange = 15f;
     [Range(0f, 100f)][SerializeField] float _hearingThreshold = 40f;
@@ -33,15 +36,15 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] private List<GameObject> _audibleNoiseList = new List<GameObject>();
     [SerializeField] private List<float> _noiseCalculatedValues = new List<float>();
 
-    ///Might move to its own script... Field of View
     [Header("Field of View Options")]
     [SerializeField] private float _visualRadius;
     [Range(0, 360)][SerializeField] private float _visualAngle;
 
     [SerializeField] private LayerMask _visualTargetMask;
     [SerializeField] private LayerMask _obstructionMask;
-    [SerializeField] private bool _canSeePlayer;
-
+    private bool _canSeePlayer;
+    [Range(0, 30)] private float playerLostCooldown;
+    private bool _isPlayerLostCoolDown; //This is a cooldown after the player left FOV
 
     //may add a timer to follow, even after player leaves visual field...
     //and a way for the enemy to face the player when lost.
@@ -69,6 +72,11 @@ public class EnemyAI : MonoBehaviour
 
         _prevPosition = transform.position;
         _enemy_NavMeshAgent = GetComponent<NavMeshAgent>();
+
+        _timerComponent = GetComponent<TimerComponent>();
+        _timerComponent.SetTimerMax(waitTime);
+        _timerComponent.ResetTimer();
+
         SetEnemyState(EEnemyState.wait);
         //StartCoroutine(EnemyIntellegence());
     }
@@ -77,13 +85,14 @@ public class EnemyAI : MonoBehaviour
         ///separate second part into a separate piece... (will determine if enemy chases player or not while hiding)
         ///
 
-        if (_enemyState == EEnemyState.wait)
+        if (_enemyState == EEnemyState.wait && !_timerComponent.IsTimerFinished())
         {
-            //WAit timer script then change to roam
-            SetEnemyState(EEnemyState.wait);
+            ///Waiting based on timer component
+            return;
         }
 
-        if (FieldOfViewCheck() && !PlayerHiddenCheck()/* && _enemyState != EEnemyState.curious*/)
+        //timer for when player is lost?
+        if (FieldOfViewCheck() && !PlayerHiddenCheck())
         {
             SetEnemyState(EEnemyState.chase);
         }
@@ -97,29 +106,6 @@ public class EnemyAI : MonoBehaviour
             SetEnemyState(EEnemyState.roam);
         }
     }
-    /*private IEnumerator EnemyIntellegence()    
-    {
-        if (_enemyState == EEnemyState.wait) 
-        {
-            yield return new WaitForSeconds(_waitTime);
-        }
-
-        ///separate second part into a separate piece... (will determine if enemy chases player or not while hiding)
-        if (FieldOfViewCheck() && _playerRef.GetComponent<PlayerControls>().GetPlayerState() != EPlayerState.hiding)
-        {
-            SetEnemyState(EEnemyState.chase);
-        }
-        else if (_audibleNoiseList.Count != 0)
-        {
-            SetEnemyState(EEnemyState.curious);
-        } 
-        else 
-        {
-            //add a better wait time later perhaps?
-            SetEnemyState(EEnemyState.roam);
-        }
-        yield return new WaitForEndOfFrame();
-    }*/
     private IEnumerator FindPlayerRef()
     {
         yield return new WaitForSeconds(0.5f);
@@ -136,13 +122,13 @@ public class EnemyAI : MonoBehaviour
         {
             case EEnemyState.wait:
                 ///do nothing
-
+                _timerComponent.ResetTimer();
 
 
                 /*_callPos = new Vector3(transform.position.x, transform.position.y, transform.position.z);
                 _targetPos = _callPos;*/
                 //Will add a wait function eventually...
-                _enemyState = EEnemyState.roam;
+                //_enemyState = EEnemyState.roam;
                 break;
             case EEnemyState.roam:
                 Roam(); //Add wait functionality
@@ -257,7 +243,7 @@ public class EnemyAI : MonoBehaviour
             if (roamDist < _enemy_NavMeshAgent.stoppingDistance)
             {
                 Vector3 point;
-                if (RandomPoint(transform.position, _roamingRange, out point))
+                if (RandomPoint(transform.position, roamingRange, out point))
                 {
                     Debug.DrawRay(point, Vector3.up, Color.blue, 1.0f);
 
@@ -297,7 +283,9 @@ public class EnemyAI : MonoBehaviour
     private bool PlayerHiddenCheck() 
     {
         EPlayerState tempPlayerState = _playerRef.GetComponent<PlayerControls>().GetPlayerState();
-        if (tempPlayerState == EPlayerState.hiding /*&& timer check*/) 
+        //_timerComponent.SetTimerMax(playerLostCooldown);
+        //_isPlayerLostCoolDown = !_timerComponent.IsTimerFinished();
+        if (tempPlayerState == EPlayerState.hiding/* && !_isPlayerLostCoolDown*/) 
         {
             return true; 
         }

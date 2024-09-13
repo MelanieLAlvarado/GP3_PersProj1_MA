@@ -42,6 +42,7 @@ public class INoiseInteraction : MonoBehaviour, IInterActions
         {
             player.SetTargetInteractible(null);
             player = null;
+            GameManager.m_Instance.GetUIManager().HideInteractionText();
         }
     }
 }

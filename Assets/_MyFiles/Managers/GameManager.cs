@@ -11,6 +11,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject playerPrefab;
     [SerializeField] private Transform playerSpawn;
     private GameObject _player;
+    [SerializeField] private GameObject GameplayWidgetPrefab;
+    private GameObject _GameplayWidget;
 
     [Header("Manager Info [READ ONLY]")]
     [SerializeField] private NoiseManager noiseManager;
@@ -51,7 +53,7 @@ public class GameManager : MonoBehaviour
         ClearExtraManagers();
         CreateNoiseManager();
         CreateEnemyManager();
-        CreateUIManager();
+        CreateGameplayWidget();
     }
     private void CreateNoiseManager()
     {
@@ -63,13 +65,21 @@ public class GameManager : MonoBehaviour
         if (enemyManager) { return; }
         enemyManager = gameObject.AddComponent<EnemyManager>();
     }
-    private void CreateUIManager()
+    private void CreateGameplayWidget()
     {
+        if (!GameplayWidgetPrefab) 
+        {
+            Debug.LogError("No Gameplay Widget Prefab! Please add in GameManager...");
+            return; 
+        }
+        if (!_GameplayWidget)
+        {
+            _GameplayWidget = Instantiate(GameplayWidgetPrefab);
+        }
         if (uIManager) { return; }
 
-        uIManager = gameObject.AddComponent<UIManager>();
+        uIManager = _GameplayWidget.GetComponent<UIManager>();
     }
-
     private void ClearExtraManagers()
     {
         NoiseManager[] noiseManagerList = this.GetComponents<NoiseManager>();

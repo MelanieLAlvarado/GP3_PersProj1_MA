@@ -56,6 +56,7 @@ public class HidingInteraction : MonoBehaviour, IInterActions
         {
             player.SetTargetInteractible(null);
             player = null;
+            GameManager.m_Instance.GetUIManager().HideInteractionText();
         }
     }
 }

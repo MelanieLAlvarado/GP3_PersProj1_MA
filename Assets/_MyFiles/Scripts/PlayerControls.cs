@@ -67,6 +67,12 @@ public class PlayerControls : MonoBehaviour
     public void SetTargetInteractible(GameObject interactionToSet) 
     {
         _targetInteractible = interactionToSet;
+        if (_targetInteractible != null)
+        { 
+            IInterActions interactionObj = _targetInteractible.GetComponent<IInterActions>();
+            UIManager uIManager = GameManager.m_Instance.GetUIManager();
+            uIManager.SetInteractionText(interactionObj.GetInteractionMessage());
+        }
     }
     public void ToggleIsHiding() 
     {
