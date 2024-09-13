@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
-[RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(HearingComponent))]
 [RequireComponent(typeof(TimerComponent))]
-//[RequireComponent(typeof(Rigidbody))]
 public class EnemyAI : MonoBehaviour
 {
+    private HearingComponent _hearingComponent;
     private TimerComponent _timerComponent;
     [SerializeField] EEnemyState enemyState;
     [Range(0f, 10f)][SerializeField] private float waitTime = 1.5f;
@@ -27,14 +27,6 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] private float currentSpeed; //might use??
 
     ///Might move to its own script... Hearing Component
-    [Header("Hearing Range Options")]
-    [Range(1.0f, 30.0f)][SerializeField] float hearingRange = 15f;
-    [Range(0f, 100f)][SerializeField] float hearingThreshold = 40f;
-    //[SerializeField] private GameObject _hRange; ///visual of hearing range (temp)
-
-    [SerializeField] private List<GameObject> noiseObjsInRange = new List<GameObject>();
-    [SerializeField] private List<GameObject> audibleNoiseList = new List<GameObject>();
-    [SerializeField] private List<float> noiseCalculatedValues = new List<float>();
 
     [Header("Field of View Options")]
     [SerializeField] private float visualRadius;
@@ -53,17 +45,6 @@ public class EnemyAI : MonoBehaviour
     public bool GetCanSeePlayer() { return FieldOfViewCheck(); }
 
     public Transform GetTargetPos() { return targetPos; }
-    public List<GameObject> GetNoisesObjsInRangeList() { return noiseObjsInRange; }
-    public void AddTriggeredNoiseToList(GameObject noiseToAdd) 
-    {
-        if (audibleNoiseList.Contains(noiseToAdd))
-        {
-            Debug.Log("This obj is already in list!");
-            return; 
-        }
-        Debug.Log("Noise has been added...");
-        audibleNoiseList.Add(noiseToAdd); 
-    }
     private void Start()
     {
         StartCoroutine(FindPlayerRef());
@@ -73,12 +54,12 @@ public class EnemyAI : MonoBehaviour
         _prevPosition = transform.position;
         _enemy_NavMeshAgent = GetComponent<NavMeshAgent>();
 
+        _hearingComponent = GetComponent<HearingComponent>();
         _timerComponent = GetComponent<TimerComponent>();
         _timerComponent.SetTimerMax(waitTime);
         _timerComponent.ResetTimer();
 
         SetEnemyState(EEnemyState.wait);
-        //StartCoroutine(EnemyIntellegence());
     }
     private void Update()
     {
@@ -96,7 +77,7 @@ public class EnemyAI : MonoBehaviour
         {
             SetEnemyState(EEnemyState.chase);
         }
-        else if (audibleNoiseList.Count > 0)
+        else if (_hearingComponent.GetIsAudibleNoisesPresent())
         {
             SetEnemyState(EEnemyState.curious);
         }
@@ -129,15 +110,11 @@ public class EnemyAI : MonoBehaviour
                 GoToTarget();
                 break;
             case EEnemyState.curious:
-                //swap target to an audible sound
-                if (noiseCalculatedValues.Count == 0 || targetPos == playerRef.transform)//separate into hearing component??
-                {
-                    CalculateSoundValues();
-                    ChooseNoiseTarget();
-                    //HearingComponent hearingComponent = GetComponent<HearingComponent>()
-                    //_noiseCalculatedValues = CalculateSoundValues(_audibleNoiseList, _hearingRange)
-                    //_targetPos = ChooseNoiseTarget(_audibleNoiseList, _noiseCalculatedValues);
+                ///swap target to an audible sound
 
+                if (_hearingComponent.GetNoiseCalculatedValues().Count == 0 || targetPos == playerRef.transform)
+                {
+                    targetPos = _hearingComponent.ChooseNoiseTarget();
                 }
                 InvestigateNoise();
                 GoToTarget();
@@ -146,7 +123,10 @@ public class EnemyAI : MonoBehaviour
                 //will evolve to include chasing the player for a short time after leaving the visual field
                 //  and will include a way to decide to pull player out of hiding spots if the player
                 //  was seen as they hid. 
-                
+                if (_hearingComponent.GetIsAudibleNoisesPresent())
+                {
+                    _hearingComponent.ClearLists(); //Might change later...
+                }
                 ChasePlayer();
                 GoToTarget();
                 CheckHidingPlace();
@@ -180,49 +160,16 @@ public class EnemyAI : MonoBehaviour
         //  and will include a way to decide to pull player out of hiding spots if the player
         //  was seen as they hid. 
     }
-    private void CalculateSoundValues()
-    {
-        if (audibleNoiseList.Count > 0) //might find a more understandable way to gauge sound value later...
-        {
-            GameObject noiseTemp = audibleNoiseList[0];
-            for (int i = 0; i < audibleNoiseList.Count; i++) //calculate sound values
-            {
-                float iDistance = Vector3.Distance(transform.position, audibleNoiseList[i].transform.position);
-
-                float distMultiplier = iDistance / hearingRange;
-
-                NoiseComponent noiseComp = audibleNoiseList[i].GetComponent<NoiseComponent>();
-                noiseCalculatedValues.Add(noiseComp.GetRawSoundAmount() * distMultiplier);
-            }
-        }
-    }
-    private void ChooseNoiseTarget()
-    {
-        //iterates through the list to find the highest noise value
-        int index = 0;
-        float noiseNum = noiseCalculatedValues[index];
-        targetPos = audibleNoiseList[index].transform;
-        for (int i = 1; i < audibleNoiseList.Count; i++) ///choose the sound with the highest noise
-        {
-            float iNoiseNum = noiseCalculatedValues[i];
-            if (noiseNum <= iNoiseNum)
-            {
-                noiseNum = iNoiseNum;
-                index = i;
-            }
-            targetPos = audibleNoiseList[index].transform;
-        }
-    }
     private void InvestigateNoise() 
     {
         Debug.Log("Investigating noise...");
         _enemy_NavMeshAgent.destination = targetPos.transform.position;
         float targetDist = Vector3.Distance(transform.position, targetPos.position);
-        Debug.Log(targetDist);
+        //Debug.Log(targetDist);
         if (targetDist < _enemy_NavMeshAgent.stoppingDistance) 
         {
-            audibleNoiseList.Clear();
-            noiseCalculatedValues.Clear();
+            _hearingComponent.ClearLists();
+            
             SetEnemyState(EEnemyState.wait);
         }
     }
@@ -230,7 +177,6 @@ public class EnemyAI : MonoBehaviour
     {
         if (targetPos != null)
         {
-            //Debug.Log("Roaming...");
             targetPos = tempCallPos;
             float roamDist = Vector3.Distance(transform.position, targetPos.position);
             targetPos.position = new Vector3(targetPos.position.x, transform.position.y, targetPos.position.z);
@@ -259,7 +205,7 @@ public class EnemyAI : MonoBehaviour
         if (visualChecks.Length != 0)
         {
             Transform visualTarget = visualChecks[0].transform;
-            Vector3 directionToTarget = (visualTarget.position - transform.position).normalized; //raw direction vector
+            Vector3 directionToTarget = (visualTarget.position - transform.position).normalized; ///raw direction vector
             if (Vector3.Angle(transform.forward, directionToTarget) < visualAngle / 2)
             {///  ^--- creating the FOV angle from forward vector by halfing the angle and distributing it equally on both sides
 
@@ -296,34 +242,6 @@ public class EnemyAI : MonoBehaviour
         }
         result = Vector3.zero;
         return false;
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        ///for when hearing range touches a hearable object
-        Debug.Log(other);
-        if (other.gameObject.GetComponent<INoiseInteraction>())
-        {
-            Debug.Log("Enemy: near noisemaker");
-            noiseObjsInRange.Add(other.gameObject);
-        }
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        ///for when hearing range leaves a hearable object
-        Debug.Log(other);
-        if (other.gameObject.GetComponent<INoiseInteraction>())
-        {
-            Debug.Log("Enemy: lost noisemaker");
-            noiseObjsInRange.Remove(other.gameObject);
-        }
-    }
-
-    private void OnDrawGizmos()
-    {
-        Gizmos.color = Color.cyan;
-        Gizmos.DrawWireSphere(transform.position, hearingRange);
     }
 }
 public enum EEnemyState { wait, roam, curious, chase}

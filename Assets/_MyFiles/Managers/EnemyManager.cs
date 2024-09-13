@@ -44,21 +44,24 @@ public class EnemyManager : MonoBehaviour
             Debug.Log(_enemies[i]);
             EnemyAI iEnemyAI = _enemies[i].GetComponent<EnemyAI>();
 
+            HearingComponent enemyHearingComp = _enemies[i].GetComponent<HearingComponent>();
+
             for (int j = 0; j < triggeredNoiseObjs.Count; j++)
             {
                 Debug.Log("Checking all noises...");
                 Debug.Log(triggeredNoiseObjs[j]);
-                Debug.Log(iEnemyAI.GetNoisesObjsInRangeList().Count);
-                
-                if (iEnemyAI.GetNoisesObjsInRangeList().Find(x => x.ToString() == triggeredNoiseObjs[j].ToString())) 
+                Debug.Log(enemyHearingComp.GetNoisesObjsInRangeList().Count);
+
+                ///~~~REWORK BEGAN~~~
+                if (enemyHearingComp.GetNoisesObjsInRangeList().Find(x => x.ToString() == triggeredNoiseObjs[j].ToString()))
                 {
                     Debug.Log("Is Valid!!! [TEST]");
                 }
-
-                if (iEnemyAI.GetNoisesObjsInRangeList().Contains(triggeredNoiseObjs[j])) 
+                if (enemyHearingComp.GetNoisesObjsInRangeList().Contains(triggeredNoiseObjs[j]))
                 {
-                    iEnemyAI.AddTriggeredNoiseToList(triggeredNoiseObjs[j]);
+                    enemyHearingComp.AddTriggeredNoiseToList(triggeredNoiseObjs[j]);
                 }
+                ///~~~REWORK END~~~
             }
         }
         //clear/remove noise list objs????

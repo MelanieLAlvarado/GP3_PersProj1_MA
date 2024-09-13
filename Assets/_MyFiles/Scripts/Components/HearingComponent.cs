@@ -7,15 +7,16 @@ using UnityEngine;
 public class HearingComponent : MonoBehaviour
 {
     //WIP rework to function on player
-    [Range(1.0f, 30.0f)][SerializeField] float hearingRange = 15f;
-    [Range(0f, 100f)][SerializeField] float hearingThreshold = 40f;
-    //[SerializeField] private GameObject _hRange; ///visual of hearing range (temp)
+    [Header("Hearing Options")]
+    [Range(1.0f, 50.0f)][SerializeField] float hearingRange = 30.0f;
+    [Range(0f, 100f)][SerializeField] float hearingThreshold = 40.0f;
 
+    [Header("Hearing List Info [READ ONLY]")]
     [SerializeField] private List<GameObject> noiseObjsInRange = new List<GameObject>();
     [SerializeField] private List<GameObject> audibleNoiseList = new List<GameObject>();
     [SerializeField] private List<float> noiseCalculatedValues = new List<float>();
     public List<GameObject> GetNoisesObjsInRangeList() { return noiseObjsInRange; }
-    public bool GetIsAudibleNoisesPresent() { return audibleNoiseList.Count != 0; }
+    public bool GetIsAudibleNoisesPresent() { return audibleNoiseList.Count > 0; }
     public List<float> GetNoiseCalculatedValues() { return noiseCalculatedValues; }
 
     public void AddTriggeredNoiseToList(GameObject noiseToAdd)
@@ -28,8 +29,6 @@ public class HearingComponent : MonoBehaviour
         Debug.Log("Noise has been added...");
         audibleNoiseList.Add(noiseToAdd);
     }
-
-
     private void Start()
     {
         SphereCollider colliderRange= GetComponent<SphereCollider>();
@@ -59,8 +58,9 @@ public class HearingComponent : MonoBehaviour
         }
         //Choose noise target
     }
-    private Transform ChooseNoiseTarget()
+    public Transform ChooseNoiseTarget()
     {
+        CalculateSoundValues();
         //iterates through the list to find the highest noise value
         int index = 0;
         float noiseNum = noiseCalculatedValues[index];

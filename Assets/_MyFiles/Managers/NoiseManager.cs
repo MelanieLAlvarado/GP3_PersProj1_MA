@@ -27,6 +27,7 @@ public class NoiseManager : MonoBehaviour
     {
         Debug.Log("Noise added to NoiseManager!");
         _activeNoiseObjs.Add(objToAdd);
+        //GameManager.m_Instance.GetPlayer().GetComponent<HearingComponent> //check player for hearing component too.
         _enemyManager.CheckEnemiesHearingRanges(_activeNoiseObjs);
     }
     public void RemoveNoise(GameObject objToRemove)
