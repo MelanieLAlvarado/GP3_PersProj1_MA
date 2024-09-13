@@ -96,7 +96,7 @@ public class EnemyAI : MonoBehaviour
         {
             SetEnemyState(EEnemyState.chase);
         }
-        else if (_audibleNoiseList.Count != 0)
+        else if (_audibleNoiseList.Count > 0)
         {
             SetEnemyState(EEnemyState.curious);
         }
@@ -136,14 +136,14 @@ public class EnemyAI : MonoBehaviour
                 break;
             case EEnemyState.curious:
                 //swap target to an audible sound
-                if (_noiseCalculatedValues.Count == 0)//separate into hearing component??
+                if (_noiseCalculatedValues.Count == 0 || _targetPos == _playerRef.transform)//separate into hearing component??
                 {
                     CalculateSoundValues();
                     ChooseNoiseTarget();
-
                     //HearingComponent hearingComponent = GetComponent<HearingComponent>()
                     //_noiseCalculatedValues = CalculateSoundValues(_audibleNoiseList, _hearingRange)
                     //_targetPos = ChooseNoiseTarget(_audibleNoiseList, _noiseCalculatedValues);
+
                 }
                 InvestigateNoise();
                 GoToTarget();
@@ -152,6 +152,7 @@ public class EnemyAI : MonoBehaviour
                 //will evolve to include chasing the player for a short time after leaving the visual field
                 //  and will include a way to decide to pull player out of hiding spots if the player
                 //  was seen as they hid. 
+                
                 ChasePlayer();
                 GoToTarget();
                 CheckHidingPlace();
@@ -223,7 +224,7 @@ public class EnemyAI : MonoBehaviour
     {
         Debug.Log("Investigating noise...");
         _enemy_NavMeshAgent.destination = _targetPos.transform.position;
-        float targetDist = Vector3.Distance(_prevPosition, _targetPos.position);
+        float targetDist = Vector3.Distance(transform.position, _targetPos.position);
         Debug.Log(targetDist);
         if (targetDist < _enemy_NavMeshAgent.stoppingDistance) 
         {
