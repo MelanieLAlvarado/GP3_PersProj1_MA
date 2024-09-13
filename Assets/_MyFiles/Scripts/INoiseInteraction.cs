@@ -3,8 +3,8 @@ using UnityEngine;
 [RequireComponent(typeof(NoiseComponent))]
 public class INoiseInteraction : MonoBehaviour, IInterActions
 {
-    PlayerControls player;
-    NoiseComponent noiseComponent;
+    PlayerControls _player;
+    NoiseComponent _noiseComponent;
     [SerializeField] [Range(0, 1)] private float noiseMultiplier = 0.8f;
     public EEntityType GetEntityType()
     {
@@ -16,32 +16,32 @@ public class INoiseInteraction : MonoBehaviour, IInterActions
     }
     public void OnInteraction()
     {
-        if (player)
+        if (_player)
         {
             ///pinging enemy
-            if (noiseComponent = this.GetComponent<NoiseComponent>())
+            if (_noiseComponent = this.GetComponent<NoiseComponent>())
             {
                 Debug.Log("NOISE HERE");
-                noiseComponent.TriggerNoise(noiseMultiplier);
+                _noiseComponent.TriggerNoise(noiseMultiplier);
             }
         }
     }
     private void OnTriggerEnter(Collider other)
     {
-        player = other.GetComponent<PlayerControls>();
-        if (player && player.GetEntityType() == EEntityType.Player)
+        _player = other.GetComponent<PlayerControls>();
+        if (_player && _player.GetEntityType() == EEntityType.Player)
         {
             Debug.Log("near noisemaker");
-            player.SetTargetInteractible(this.gameObject);
+            _player.SetTargetInteractible(this.gameObject);
         }
     }
     private void OnTriggerExit(Collider other)
     {
-        if (player && other.GetComponent<PlayerControls>() == player
-            && this.gameObject == player.GetTargetInteractible())
+        if (_player && other.GetComponent<PlayerControls>() == _player
+            && this.gameObject == _player.GetTargetInteractible())
         {
-            player.SetTargetInteractible(null);
-            player = null;
+            _player.SetTargetInteractible(null);
+            _player = null;
             GameManager.m_Instance.GetUIManager().HideInteractionText();
         }
     }

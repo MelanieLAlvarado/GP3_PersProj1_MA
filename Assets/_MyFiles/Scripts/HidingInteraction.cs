@@ -3,9 +3,9 @@ using UnityEngine;
 
 public class HidingInteraction : MonoBehaviour, IInterActions
 {
-    PlayerControls player;
+    PlayerControls _player;
     [SerializeField] private Transform hidePos;
-    Transform playerLastPos;
+    Transform _playerLastPos; //will used for remembering the player's location before hiding
 
     public Transform GetHidePos() { return hidePos; }
     public EEntityType GetEntityType()
@@ -18,16 +18,16 @@ public class HidingInteraction : MonoBehaviour, IInterActions
     }
     public void OnInteraction()
     {
-        if (player)
+        if (_player)
         {
-            if (player.GetIsHiding() == false)
+            if (_player.GetIsHiding() == false)
             {
                 //save player position prior to hiding
-                player.SetPrevHidePos(player.transform.position);
+                _player.SetPrevHidePos(_player.transform.position);
                 Debug.Log("HIDE HERE");
             }
-            player.ToggleIsHiding();
-            if (player.GetIsHiding() == false)//place player at last unhidden position (slerp when possible)
+            _player.ToggleIsHiding();
+            if (_player.GetIsHiding() == false)//place player at last unhidden position (slerp when possible)
             {
                 //StartCoroutine(PutPlayerAtUnhiddenPos());
             }
@@ -37,25 +37,25 @@ public class HidingInteraction : MonoBehaviour, IInterActions
     {
         yield return new WaitForSeconds(0.25f);
         Debug.Log("Unhide");
-        player.transform.position = player.GetPrevHidePos();
+        _player.transform.position = _player.GetPrevHidePos();
         StopCoroutine(PutPlayerAtUnhiddenPos());
     }
     private void OnTriggerEnter(Collider other)
     {
-        player = other.GetComponent<PlayerControls>();
-        if (player && player.GetEntityType() == EEntityType.Player)
+        _player = other.GetComponent<PlayerControls>();
+        if (_player && _player.GetEntityType() == EEntityType.Player)
         {
             Debug.Log("near hiding place");
-            player.SetTargetInteractible(this.gameObject);
+            _player.SetTargetInteractible(this.gameObject);
         }
     }
     private void OnTriggerExit(Collider other)
     {
-        if (player && other.GetComponent<PlayerControls>() == player
-            && this.gameObject == player.GetTargetInteractible()) 
+        if (_player && other.GetComponent<PlayerControls>() == _player
+            && this.gameObject == _player.GetTargetInteractible()) 
         {
-            player.SetTargetInteractible(null);
-            player = null;
+            _player.SetTargetInteractible(null);
+            _player = null;
             GameManager.m_Instance.GetUIManager().HideInteractionText();
         }
     }

@@ -263,24 +263,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3b642394b45542d449e8b5f21ac37c25, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _entityType: 1
-  _playerState: 0
-  _standingHeight: 2
-  _sneakHeight: 1
+  entityType: 1
+  playerState: 0
+  standingHeight: 2
+  sneakHeight: 1
   sneakSpeed: 2
   walkSpeed: 6
   sprintSpeed: 10
   speed: 5
-  _playerCam: {fileID: 5732449467004988061}
+  playerCam: {fileID: 5732449467004988061}
   xSensitivity: 30
   ySensitivity: 30
-  _targetInteractible: {fileID: 0}
-  _isInteracting: 0
-  _isHiding: 0
-  _idleMultiplier: 0
-  _sneakMultiplier: 0.2
-  _walkMultiplier: 0.4
-  _sprintMultiplier: 0.6
+  targetInteractible: {fileID: 0}
+  isInteracting: 0
+  isHiding: 0
+  idleMultiplier: 0
+  sneakMultiplier: 0.2
+  walkMultiplier: 0.4
+  sprintMultiplier: 0.6
 --- !u!143 &6329497128120016208
 CharacterController:
   m_ObjectHideFlags: 0

@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 2314408392211735903}
   - component: {fileID: 8431441934681044251}
   - component: {fileID: 1501335151299559094}
+  - component: {fileID: 6298732583009147092}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Untagged
@@ -169,28 +170,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f2ec7605fd46dc6488b8a42170d5140e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _enemyState: 0
-  _waitTime: 1.5
-  _roamingRange: 5
-  _tempCallPos: {fileID: 0}
-  _enemyManager: {fileID: 0}
-  _playerRef: {fileID: 0}
-  _targetPos: {fileID: 0}
-  _currentSpeed: 0
-  _hearingRange: 30
-  _hearingThreshold: 20
-  _noiseObjsInRange: []
-  _audibleNoiseList: []
-  _noiseCalculatedValues: []
-  _visualRadius: 10
-  _visualAngle: 100
-  _visualTargetMask:
+  enemyState: 0
+  waitTime: 1.5
+  roamingRange: 20
+  enemyManager: {fileID: 0}
+  playerRef: {fileID: 0}
+  tempCallPos: {fileID: 0}
+  targetPos: {fileID: 0}
+  currentSpeed: 0
+  hearingRange: 15
+  hearingThreshold: 40
+  noiseObjsInRange: []
+  audibleNoiseList: []
+  noiseCalculatedValues: []
+  visualRadius: 15
+  visualAngle: 120
+  visualTargetMask:
     serializedVersion: 2
     m_Bits: 128
-  _obstructionMask:
+  obstructionMask:
     serializedVersion: 2
     m_Bits: 64
-  _canSeePlayer: 0
+  playerLostCooldown: 0
 --- !u!54 &1501335151299559094
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -218,3 +219,15 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &6298732583009147092
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2436419054086537201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ea8b0c79a26bbb4dac76d8513db161b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
