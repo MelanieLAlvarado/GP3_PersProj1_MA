@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
 [RequireComponent(typeof(Rigidbody))]
+//[RequireComponent(typeof(Rigidbody))]
 public class EnemyAI : MonoBehaviour
 {
     [SerializeField] EEnemyState _enemyState;
@@ -48,8 +49,8 @@ public class EnemyAI : MonoBehaviour
     public float GetVisualAngle() { return _visualAngle; }
     public bool GetCanSeePlayer() { return FieldOfViewCheck(); }
 
-    public List<GameObject> GetNoisesObjsInRangeList() { return _noiseObjsInRange; }
     public Transform GetTargetPos() { return _targetPos; }
+    public List<GameObject> GetNoisesObjsInRangeList() { return _noiseObjsInRange; }
     public void AddTriggeredNoiseToList(GameObject noiseToAdd) 
     {
         if (_audibleNoiseList.Contains(noiseToAdd))
@@ -74,7 +75,15 @@ public class EnemyAI : MonoBehaviour
     private void Update()
     {
         ///separate second part into a separate piece... (will determine if enemy chases player or not while hiding)
-        if (FieldOfViewCheck() && !PlayerHiddenCheck() && _enemyState != EEnemyState.curious)
+        ///
+
+        if (_enemyState == EEnemyState.wait)
+        {
+            //WAit timer script then change to roam
+            SetEnemyState(EEnemyState.wait);
+        }
+
+        if (FieldOfViewCheck() && !PlayerHiddenCheck()/* && _enemyState != EEnemyState.curious*/)
         {
             SetEnemyState(EEnemyState.chase);
         }
@@ -128,6 +137,8 @@ public class EnemyAI : MonoBehaviour
             case EEnemyState.wait:
                 ///do nothing
 
+
+
                 /*_callPos = new Vector3(transform.position.x, transform.position.y, transform.position.z);
                 _targetPos = _callPos;*/
                 //Will add a wait function eventually...
@@ -179,6 +190,7 @@ public class EnemyAI : MonoBehaviour
         }
         else 
         {
+            _targetPos = _tempCallPos;
             SetEnemyState(EEnemyState.wait);
         }
     }
@@ -193,11 +205,9 @@ public class EnemyAI : MonoBehaviour
         if (_audibleNoiseList.Count > 0) //might find a more understandable way to gauge sound value later...
         {
             GameObject noiseTemp = _audibleNoiseList[0];
-            List<float> distancesFromEnemy = new List<float>();
             for (int i = 0; i < _audibleNoiseList.Count; i++) //calculate sound values
             {
                 float iDistance = Vector3.Distance(transform.position, _audibleNoiseList[i].transform.position);
-                distancesFromEnemy.Add(iDistance);
 
                 float distMultiplier = iDistance / _hearingRange;
 
