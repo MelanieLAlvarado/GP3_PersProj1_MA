@@ -6,6 +6,10 @@ public class INoiseInteraction : MonoBehaviour, IInterActions
     PlayerControls _player;
     NoiseComponent _noiseComponent;
     [SerializeField] [Range(0, 1)] private float noiseMultiplier = 0.8f;
+    private void Start()
+    {
+        GetComponent<NoiseComponent>().SetNoiseMultiplier(noiseMultiplier);
+    }
     public EEntityType GetEntityType()
     {
         return EEntityType.NoiseMaker;
@@ -22,7 +26,7 @@ public class INoiseInteraction : MonoBehaviour, IInterActions
             if (_noiseComponent = this.GetComponent<NoiseComponent>())
             {
                 Debug.Log("NOISE HERE");
-                _noiseComponent.TriggerNoise(noiseMultiplier);
+                _noiseComponent.TriggerNoise();
             }
         }
     }

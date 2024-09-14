@@ -7,6 +7,7 @@ using UnityEngine.AI;
 [RequireComponent(typeof(TimerComponent))]
 public class EnemyAI : MonoBehaviour
 {
+    private NoiseManager _noiseManager;
     private HearingComponent _hearingComponent;
     private TimerComponent _timerComponent;
     [SerializeField] EEnemyState enemyState;
@@ -54,10 +55,12 @@ public class EnemyAI : MonoBehaviour
         _prevPosition = transform.position;
         _enemy_NavMeshAgent = GetComponent<NavMeshAgent>();
 
+        _noiseManager = GameManager.m_Instance.GetComponent<NoiseManager>();
         _hearingComponent = GetComponent<HearingComponent>();
         _timerComponent = GetComponent<TimerComponent>();
         _timerComponent.SetTimerMax(waitTime);
         _timerComponent.ResetTimer();
+
 
         SetEnemyState(EEnemyState.wait);
     }
@@ -103,6 +106,7 @@ public class EnemyAI : MonoBehaviour
         {
             case EEnemyState.wait:
                 ///do nothing
+                _hearingComponent.ClearAudibleLists();
                 _timerComponent.ResetTimer();
                 break;
             case EEnemyState.roam:
@@ -112,9 +116,17 @@ public class EnemyAI : MonoBehaviour
             case EEnemyState.curious:
                 ///swap target to an audible sound
 
-                if (_hearingComponent.GetNoiseCalculatedValues().Count == 0 || targetPos == playerRef.transform)
+                //bool isOtherTarget = targetPos == playerRef.transform || targetPos == tempCallPos.transform;
+                if (_hearingComponent.GetNoiseCalculatedValues().Count == 0 || targetPos == tempCallPos.transform)
                 {
                     targetPos = _hearingComponent.ChooseNoiseTarget();
+                    if (!targetPos)
+                    {
+                        targetPos = tempCallPos;
+                        //_noiseManager.ClearActiveNoiseSources();//Might swap later
+                        //_hearingComponent.ClearAudibleLists();
+                        return;
+                    }
                 }
                 InvestigateNoise();
                 GoToTarget();
@@ -125,7 +137,7 @@ public class EnemyAI : MonoBehaviour
                 //  was seen as they hid. 
                 if (_hearingComponent.GetIsAudibleNoisesPresent())
                 {
-                    _hearingComponent.ClearLists(); //Might change later...
+                    _hearingComponent.ClearAudibleLists(); //Might change later...
                 }
                 ChasePlayer();
                 GoToTarget();
@@ -165,11 +177,11 @@ public class EnemyAI : MonoBehaviour
         Debug.Log("Investigating noise...");
         _enemy_NavMeshAgent.destination = targetPos.transform.position;
         float targetDist = Vector3.Distance(transform.position, targetPos.position);
-        //Debug.Log(targetDist);
+        Debug.Log(targetDist);
         if (targetDist < _enemy_NavMeshAgent.stoppingDistance) 
         {
-            _hearingComponent.ClearLists();
-            
+            _hearingComponent.ClearAudibleLists();
+            _noiseManager.ClearActiveNoiseSources();
             SetEnemyState(EEnemyState.wait);
         }
     }

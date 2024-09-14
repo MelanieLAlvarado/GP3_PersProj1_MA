@@ -1,15 +1,13 @@
 using System;
-using System.Collections;
-using System.Numerics;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.TextCore.Text;
 using Quaternion = UnityEngine.Quaternion;
 using Vector2 = UnityEngine.Vector2;
 using Vector3 = UnityEngine.Vector3;
 
 [RequireComponent(typeof(CharacterController))]
 [RequireComponent(typeof(PlayerInput))]
+[RequireComponent(typeof(NoiseComponent))]
 public class PlayerControls : MonoBehaviour
 {
     [SerializeField] private EEntityType entityType = EEntityType.Player;
@@ -43,12 +41,13 @@ public class PlayerControls : MonoBehaviour
     
     [Header("Interaction info")]
     [SerializeField]private GameObject targetInteractible;
-    [SerializeField] private bool isInteracting; //to see input in editor
+    [SerializeField] private bool isInteracting; //for seeing input in editor
     [SerializeField] private bool isHiding;
     private Vector3 _prevHidePos;
 
     [Header("Noise Options")]
     private NoiseComponent _noiseComponent;
+    private float _currentMultiplier;
     [SerializeField][Range(0, 1)] private float idleMultiplier = 0f;
     [SerializeField][Range(0, 1)] private float sneakMultiplier = 0.2f;
     [SerializeField][Range(0, 1)] private float walkMultiplier = 0.4f;
@@ -67,7 +66,7 @@ public class PlayerControls : MonoBehaviour
     {
         targetInteractible = interactionToSet;
         if (targetInteractible != null)
-        { 
+        {
             IInterActions interactionObj = targetInteractible.GetComponent<IInterActions>();
             UIManager uIManager = GameManager.m_Instance.GetUIManager();
             uIManager.SetInteractionText(interactionObj.GetInteractionMessage());
@@ -97,8 +96,9 @@ public class PlayerControls : MonoBehaviour
         _isSneaking = false;
         _isSprinting = false;
         speed = walkSpeed;
-        playerState = EPlayerState.walking;
 
+        playerState = EPlayerState.walking;
+        _currentMultiplier = walkMultiplier;
 
         isInteracting = false;
         isHiding = false;
@@ -106,6 +106,7 @@ public class PlayerControls : MonoBehaviour
 
     private void FixedUpdate()
     {
+        ProcessNoise();
         if (isHiding) 
         {
             ProcessHide();
@@ -138,6 +139,10 @@ public class PlayerControls : MonoBehaviour
         if (_defaultMovement == true && !isHiding)
         {
             Vector2 inputVector = _playerInputActions.Player.Move.ReadValue<Vector2>();
+            if (inputVector.x == 0 && inputVector.y == 0)
+            {
+                playerState = EPlayerState.idle;
+            }
             Vector3 movementDirection = new Vector3(inputVector.x, 0, inputVector.y);
             _playerController.Move(transform.TransformDirection(movementDirection) * (speed * Time.deltaTime));
 
@@ -149,7 +154,6 @@ public class PlayerControls : MonoBehaviour
 
             _playerController.Move(Time.deltaTime * _playerVelocity);
         }
-        ProcessNoise();
     }
 
     private void ProcessSneak()
@@ -171,26 +175,36 @@ public class PlayerControls : MonoBehaviour
 
     private void ProcessNoise() 
     {
-        if (!_noiseComponent)
+        ProcessNoiseType();
+        if (_noiseComponent.GetCanMakeNoise())
+        { 
+            _noiseComponent.TriggerNoise();
+        }    
+        if (!_noiseComponent || _noiseComponent.GetNoiseMultiplier() == _currentMultiplier)
         {
             return;
         }
+        _noiseComponent.SetNoiseMultiplier(_currentMultiplier);
+        Debug.Log(_currentMultiplier);
+    }
+    private void ProcessNoiseType() 
+    {
         switch (playerState)
         {
             case EPlayerState.idle:
-                _noiseComponent.TriggerNoise(idleMultiplier);
+                _currentMultiplier = idleMultiplier;
                 break;
             case EPlayerState.walking:
-                _noiseComponent.TriggerNoise(walkMultiplier);
+                _currentMultiplier = walkMultiplier;
                 break;
             case EPlayerState.sneaking:
-                _noiseComponent.TriggerNoise(sneakMultiplier);
+                _currentMultiplier = sneakMultiplier;
                 break;
             case EPlayerState.sprinting:
-                _noiseComponent.TriggerNoise(sprintMultiplier);
+                _currentMultiplier = sprintMultiplier;
                 break;
             case EPlayerState.hiding:
-                _noiseComponent.TriggerNoise(idleMultiplier);
+                _currentMultiplier = idleMultiplier;
                 break;
         }
     }

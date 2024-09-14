@@ -38,30 +38,25 @@ public class EnemyManager : MonoBehaviour
     }
     public void CheckEnemiesHearingRanges(List<GameObject> triggeredNoiseObjs)
     {
-        Debug.Log("Checking all enemies...");
+        //Debug.Log("Checking all enemies...");
         for (int i = 0; i < _enemies.Count; i++)
         {
-            Debug.Log(_enemies[i]);
+            //Debug.Log(_enemies[i]);
             EnemyAI iEnemyAI = _enemies[i].GetComponent<EnemyAI>();
 
             HearingComponent enemyHearingComp = _enemies[i].GetComponent<HearingComponent>();
 
             for (int j = 0; j < triggeredNoiseObjs.Count; j++)
             {
-                Debug.Log("Checking all noises...");
-                Debug.Log(triggeredNoiseObjs[j]);
-                Debug.Log(enemyHearingComp.GetNoisesObjsInRangeList().Count);
+                //Debug.Log("Checking all noises...");
+                //1Debug.Log(triggeredNoiseObjs[j]);
+                //Debug.Log(enemyHearingComp.GetNoisesObjsInRangeList().Count);
 
-                ///~~~REWORK BEGAN~~~
                 if (enemyHearingComp.GetNoisesObjsInRangeList().Find(x => x.ToString() == triggeredNoiseObjs[j].ToString()))
                 {
                     Debug.Log("Is Valid!!! [TEST]");
+                    enemyHearingComp.AddToAudibleNoiseList(triggeredNoiseObjs[j]);
                 }
-                if (enemyHearingComp.GetNoisesObjsInRangeList().Contains(triggeredNoiseObjs[j]))
-                {
-                    enemyHearingComp.AddTriggeredNoiseToList(triggeredNoiseObjs[j]);
-                }
-                ///~~~REWORK END~~~
             }
         }
         //clear/remove noise list objs????
