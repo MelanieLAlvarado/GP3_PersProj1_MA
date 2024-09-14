@@ -5,13 +5,16 @@ using UnityEngine;
 using UnityEngine.AI;
 [RequireComponent(typeof(HearingComponent))]
 [RequireComponent(typeof(TimerComponent))]
+[RequireComponent(typeof(TimerComponent))]
 public class EnemyAI : MonoBehaviour
 {
     private NoiseManager _noiseManager;
     private HearingComponent _hearingComponent;
-    private TimerComponent _timerComponent;
+    private TimerComponent _waitTimer;
+    private TimerComponent _chaseTimer;
     [SerializeField] EEnemyState enemyState;
     [Range(0f, 10f)][SerializeField] private float waitTime = 1.5f;
+    [Range(0f, 10f)][SerializeField] private float additionalChaseTime = 2f;
     [Range(1.0f, 30.0f)][SerializeField] float roamingRange = 20f;
 
     [Header("Manager Info [Read Only]")]
@@ -57,10 +60,14 @@ public class EnemyAI : MonoBehaviour
 
         _noiseManager = GameManager.m_Instance.GetComponent<NoiseManager>();
         _hearingComponent = GetComponent<HearingComponent>();
-        _timerComponent = GetComponent<TimerComponent>();
-        _timerComponent.SetTimerMax(waitTime);
-        _timerComponent.ResetTimer();
+        
+        _waitTimer = GetComponents<TimerComponent>()[0];
+        _waitTimer.SetTimerMax(waitTime);
+        _waitTimer.ResetTimer();
 
+        _chaseTimer = GetComponents<TimerComponent>()[1];
+        _chaseTimer.SetTimerMax(additionalChaseTime);
+        _chaseTimer.ResetTimer();
 
         SetEnemyState(EEnemyState.wait);
     }
@@ -69,14 +76,14 @@ public class EnemyAI : MonoBehaviour
         ///separate second part into a separate piece... (will determine if enemy chases player or not while hiding)
         ///
 
-        if (enemyState == EEnemyState.wait && !_timerComponent.IsTimerFinished())
+        if (enemyState == EEnemyState.wait && !_waitTimer.IsTimerFinished())
         {
             ///Waiting based on timer component
             return;
         }
 
         //timer for when player is lost?
-        if (FieldOfViewCheck() && !PlayerHiddenCheck())
+        if ((FieldOfViewCheck() && !PlayerHiddenCheck())/* || !_chaseTimer.IsTimerFinished()*/)
         {
             SetEnemyState(EEnemyState.chase);
         }
@@ -107,7 +114,8 @@ public class EnemyAI : MonoBehaviour
             case EEnemyState.wait:
                 ///do nothing
                 _hearingComponent.ClearAudibleLists();
-                _timerComponent.ResetTimer();
+                _waitTimer.ResetTimer();
+                //_waitTimer.SetRunTimer(true);
                 break;
             case EEnemyState.roam:
                 Roam(); //Add wait functionality
@@ -123,9 +131,9 @@ public class EnemyAI : MonoBehaviour
                     if (!targetPos)
                     {
                         targetPos = tempCallPos;
+                        SetEnemyState(EEnemyState.wait);
                         //_noiseManager.ClearActiveNoiseSources();//Might swap later
                         //_hearingComponent.ClearAudibleLists();
-                        return;
                     }
                 }
                 InvestigateNoise();
@@ -165,12 +173,6 @@ public class EnemyAI : MonoBehaviour
             targetPos = tempCallPos;
             SetEnemyState(EEnemyState.wait);
         }
-    }
-    private void CheckHidingPlace() 
-    {
-        //will include chasing the player for a short time after leaving the visual field
-        //  and will include a way to decide to pull player out of hiding spots if the player
-        //  was seen as they hid. 
     }
     private void InvestigateNoise() 
     {
@@ -225,6 +227,7 @@ public class EnemyAI : MonoBehaviour
                 if (!Physics.Raycast(transform.position, directionToTarget, distanceToTarget, obstructionMask))
                 {
                     targetPos = visualTarget;
+                    //_chaseTimer.ResetTimer();
                     return true; ///if the visual target within the angle, range, and not obtructed: then chase
                 }
                 return false; /// The visual target is not within the angle of the FOV
@@ -239,9 +242,16 @@ public class EnemyAI : MonoBehaviour
         //_isPlayerLostCoolDown = !_timerComponent.IsTimerFinished();
         if (tempPlayerState == EPlayerState.hiding/* && !_isPlayerLostCoolDown*/) 
         {
+            ///return !_chaseTimer.IsTimerFinished();
             return true; 
         }
         return false;
+    }
+    private void CheckHidingPlace()
+    {
+        //will include chasing the player for a short time after leaving the visual field
+        //  and will include a way to decide to pull player out of hiding spots if the player
+        //  was seen as they hid. 
     }
     private bool RandomPoint(Vector3 center, float range, out Vector3 result) 
     {
