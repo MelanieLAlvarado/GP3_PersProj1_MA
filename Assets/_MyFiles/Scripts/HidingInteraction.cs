@@ -14,7 +14,11 @@ public class HidingInteraction : MonoBehaviour, IInterActions
     }
     public string GetInteractionMessage()
     {
-        return "Press 'E' to hide.";
+        if (_player.GetIsHiding() == false)
+        {
+            return "Press 'E' to hide.";
+        }
+        return "Press 'E' to leave";
     }
     public void OnInteraction()
     {
@@ -31,6 +35,7 @@ public class HidingInteraction : MonoBehaviour, IInterActions
             {
                 //StartCoroutine(PutPlayerAtUnhiddenPos());
             }
+            GameManager.m_Instance.GetUIManager().SetInteractionText(GetInteractionMessage());
         }
     }
     private IEnumerator PutPlayerAtUnhiddenPos() 
