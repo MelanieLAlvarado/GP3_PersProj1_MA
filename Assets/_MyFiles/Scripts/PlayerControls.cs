@@ -8,6 +8,7 @@ using Vector3 = UnityEngine.Vector3;
 [RequireComponent(typeof(CharacterController))]
 [RequireComponent(typeof(PlayerInput))]
 [RequireComponent(typeof(NoiseComponent))]
+[RequireComponent(typeof(HearingComponent))]
 public class PlayerControls : MonoBehaviour
 {
     [SerializeField] private EEntityType entityType = EEntityType.Player;
@@ -16,14 +17,14 @@ public class PlayerControls : MonoBehaviour
     private PlayerInputActions _playerInputActions;
     private CharacterController _playerController;
 
-    [Header("Movement")] 
-    [SerializeField]private float standingHeight;
-    [SerializeField]private float sneakHeight;
+    [Header("Movement")]
+    [SerializeField] private float standingHeight;
+    [SerializeField] private float sneakHeight;
     private bool _isSneaking;
 
-    [SerializeField] [Range(1.0f, 6.0f)] private float sneakSpeed = 2f;
-    [SerializeField] [Range(1.0f, 8.0f)] private float walkSpeed = 6f;
-    [SerializeField] [Range(1.0f, 10.0f)]private float sprintSpeed = 8f;
+    [SerializeField][Range(1.0f, 6.0f)] private float sneakSpeed = 2f;
+    [SerializeField][Range(1.0f, 8.0f)] private float walkSpeed = 6f;
+    [SerializeField][Range(1.0f, 10.0f)] private float sprintSpeed = 8f;
     private bool _isSprinting;
     [SerializeField] private float speed = 5f;
     private Vector3 _playerVelocity;
@@ -32,15 +33,15 @@ public class PlayerControls : MonoBehaviour
     private float _gravity = -9.8f;
     private bool _defaultMovement = true;
 
-    [Header("Camera Options")] 
+    [Header("Camera Options")]
     [SerializeField] private Camera playerCam;
 
     private float _xRotation = 0f;
     [SerializeField] private float xSensitivity = 30f;
     [SerializeField] private float ySensitivity = 30f;
-    
+
     [Header("Interaction info")]
-    [SerializeField]private GameObject targetInteractible;
+    [SerializeField] private GameObject targetInteractible;
     [SerializeField] private bool isInteracting; //for seeing input in editor
     [SerializeField] private bool isHiding;
     private Vector3 _prevHidePos;
@@ -53,6 +54,8 @@ public class PlayerControls : MonoBehaviour
     [SerializeField][Range(0, 1)] private float walkMultiplier = 0.5f;
     [SerializeField][Range(0, 1)] private float sprintMultiplier = 0.7f;
 
+    private HearingComponent _hearingComponent;
+    private UIManager _uIManager;
 
     public EEntityType GetEntityType() { return entityType; }
     public EPlayerState GetPlayerState() { return playerState; }
@@ -62,7 +65,7 @@ public class PlayerControls : MonoBehaviour
     public Vector3 GetPrevHidePos() { return _prevHidePos; }
     public void SetPrevHidePos(Vector3 posToSet) { _prevHidePos = posToSet; }
 
-    public void SetTargetInteractible(GameObject interactionToSet) 
+    public void SetTargetInteractible(GameObject interactionToSet)
     {
         targetInteractible = interactionToSet;
         if (targetInteractible != null)
@@ -72,7 +75,7 @@ public class PlayerControls : MonoBehaviour
             uIManager.SetInteractionText(interactionObj.GetInteractionMessage());
         }
     }
-    public void ToggleIsHiding() 
+    public void ToggleIsHiding()
     {
         isHiding = !isHiding;
         if (isHiding)
@@ -92,6 +95,8 @@ public class PlayerControls : MonoBehaviour
         _playerController = GetComponent<CharacterController>();
 
         _noiseComponent = GetComponent<NoiseComponent>();
+        _hearingComponent = GetComponent<HearingComponent>();
+        _uIManager = GameManager.m_Instance.GetUIManager();
 
         _isSneaking = false;
         _isSprinting = false;
@@ -107,7 +112,7 @@ public class PlayerControls : MonoBehaviour
     private void FixedUpdate()
     {
         ProcessNoise();
-        if (isHiding) 
+        if (isHiding)
         {
             ProcessHide();
             return;
@@ -125,7 +130,7 @@ public class PlayerControls : MonoBehaviour
     {
         ProcessLook();
     }
-    private void ProcessHide() 
+    private void ProcessHide()
     {
         //at this point, the targetinteractible should be the hiding interaction
         if (isHiding && targetInteractible.GetComponent<HidingInteraction>())
@@ -171,7 +176,13 @@ public class PlayerControls : MonoBehaviour
             _playerController.height = Mathf.Lerp(_playerController.height, heightChange, sneakSpeed);
         }
     }
-
+    private void ProcessNoisesHeard()
+    {
+        if (_hearingComponent && !_hearingComponent.GetAreNoisesInaudible())
+        {
+            _uIManager.UpdateNoiseMeter();
+        }
+    }
     private void ProcessNoise() 
     {
         ProcessNoiseType();

@@ -46,16 +46,9 @@ public class EnemyManager : MonoBehaviour
             EnemyAI iEnemyAI = _enemies[i].GetComponent<EnemyAI>();
 
             HearingComponent enemyHearingComp = _enemies[i].GetComponent<HearingComponent>();
+
             ///Checking every object from parameters
-            for (int j = 0; j < triggeredNoiseObjs.Count; j++)
-            {
-                Debug.Log("OBJECT CHECK");
-                if (enemyHearingComp.GetNoisesObjsInRangeList().Find(x => x.ToString() == triggeredNoiseObjs[j].ToString()))
-                {
-                    Debug.Log("Is Valid!!!               [TEST]");
-                    enemyHearingComp.AddToAudibleNoiseList(triggeredNoiseObjs[j]);
-                }
-            }
+            enemyHearingComp.CheckHearingRange(triggeredNoiseObjs);
         }
     }
 }

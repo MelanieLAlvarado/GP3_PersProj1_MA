@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class NoiseManager : MonoBehaviour
 {
+    private PlayerControls _playerRef;
     private EnemyManager _enemyManager;
     [SerializeField] private List<GameObject> noiseObjsInScene = new List<GameObject>();
     [SerializeField] private List<GameObject> activeNoiseObjs = new List<GameObject>();
@@ -43,12 +44,14 @@ public class NoiseManager : MonoBehaviour
     public void CheckNearbyHearingObjects() 
     {
         Debug.Log("CHECKING HEARNIG!!!");
-        //GameManager.m_Instance.GetPlayer().GetComponent<HearingComponent> //check player for hearing component too.
-        /*for (int i = 0; i < _NoiseObjsInScene.Count; i++)
-        { 
-            GameObject obj = _NoiseObjsInScene[i];
-            Debug.Log($"{obj}");
-        }*/
+        if (GameManager.m_Instance.GetPlayer())
+        {
+            _playerRef = GameManager.m_Instance.GetPlayer().GetComponent<PlayerControls>();
+        }
+        if (_playerRef.GetComponent<HearingComponent>()) 
+        {
+            _playerRef.GetComponent<HearingComponent>().CheckHearingRange(activeNoiseObjs);
+        }
         _enemyManager.CheckEnemiesHearingRanges(activeNoiseObjs);
     }
     public void RemoveNoise(GameObject objToRemove)

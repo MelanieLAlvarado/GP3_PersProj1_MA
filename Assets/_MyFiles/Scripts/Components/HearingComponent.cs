@@ -2,8 +2,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(SphereCollider))]
-[RequireComponent(typeof(Rigidbody))]
-
 public class HearingComponent : MonoBehaviour
 {
     //WIP rework to function on player
@@ -24,8 +22,38 @@ public class HearingComponent : MonoBehaviour
     {
         return audibleNoiseList.Count > 0; 
     }
+    public void CheckHearingRange(List<GameObject> listToCheck) 
+    {
+        for (int j = 0; j < listToCheck.Count; j++)
+        {
+            Debug.Log("OBJECT CHECK");
+            if (noiseObjsInRange.Find(x => x.ToString() == listToCheck.ToString()))
+            {
+                Debug.Log("Is Valid!!!               [TEST]");
+                AddToAudibleNoiseList(listToCheck[j]);
+            }
+        }
+    }
+    private void Start()
+    {
+        _noiseManager = GameManager.m_Instance.GetNoiseManager();
 
-    public void AddToAudibleNoiseList(GameObject noiseToAdd)
+        SphereCollider colliderRange = GetComponent<SphereCollider>();
+        colliderRange.isTrigger = true;
+        colliderRange.radius = hearingRange;
+        LayerMask visualMask = GameManager.m_Instance.GetVisualMask();
+        Debug.Log("added layer");
+        colliderRange.excludeLayers += visualMask;
+
+        if (this.gameObject.GetComponent<EnemyAI>())
+        {
+            Rigidbody rigidBody = GetComponent<Rigidbody>();
+            rigidBody.useGravity = false;
+            rigidBody.isKinematic = true;
+            rigidBody.constraints = RigidbodyConstraints.FreezeAll;
+        }
+    }
+    private void AddToAudibleNoiseList(GameObject noiseToAdd)
     {
         if (audibleNoiseList.Contains(noiseToAdd))
         {
@@ -43,20 +71,6 @@ public class HearingComponent : MonoBehaviour
             _noiseManager.RemoveNoise(noiseToAdd);
         }
     }
-    private void Start()
-    {
-        _noiseManager = GameManager.m_Instance.GetNoiseManager();
-
-        SphereCollider colliderRange = GetComponent<SphereCollider>();
-        colliderRange.isTrigger = true;
-        colliderRange.radius = hearingRange;
-
-        Rigidbody rigidBody = GetComponent<Rigidbody>();
-        rigidBody.useGravity = false;
-        rigidBody.isKinematic = true;
-        rigidBody.constraints = RigidbodyConstraints.FreezeAll;
-    }
-
     private float CalculateSingleNoiseValue(GameObject objToReceive) 
     {
         float iDistance = Vector3.Distance(transform.position, objToReceive.transform.position);

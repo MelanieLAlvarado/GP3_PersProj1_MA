@@ -835,6 +835,9 @@ MonoBehaviour:
   uIManager: {fileID: 0}
   enemyPrefab: {fileID: 2436419054086537201, guid: 80bb90de75f69da4a979206888841b49, type: 3}
   enemySpawnLoc: {fileID: 2074603706}
+  visualMask:
+    serializedVersion: 2
+    m_Bits: 128
 --- !u!4 &1979294397
 Transform:
   m_ObjectHideFlags: 0

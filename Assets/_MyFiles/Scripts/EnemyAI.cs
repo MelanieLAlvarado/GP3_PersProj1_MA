@@ -44,6 +44,8 @@ public class EnemyAI : MonoBehaviour
 
     //may add a timer to follow, even after player leaves visual field...
     //and a way for the enemy to face the player when lost.
+
+
     public float GetVisualRadius() { return visualRadius; }
     public float GetVisualAngle() { return visualAngle; }
     public bool GetCanSeePlayer() { return FieldOfViewCheck(); }
@@ -52,6 +54,7 @@ public class EnemyAI : MonoBehaviour
     private void Start()
     {
         StartCoroutine(FindPlayerRef());
+
         tempCallPos = new GameObject("TempPos").transform;
         tempCallPos.position = transform.position;
 
@@ -189,7 +192,7 @@ public class EnemyAI : MonoBehaviour
     }
     private bool FieldOfViewCheck()
     {
-        Collider[] visualChecks = Physics.OverlapSphere(transform.position, visualRadius, visualTargetMask);
+        Collider[] visualChecks = Physics.OverlapSphere(transform.position, visualRadius, visualTargetMask, QueryTriggerInteraction.Ignore);
 
         if (visualChecks.Length != 0)
         {
@@ -239,14 +242,6 @@ public class EnemyAI : MonoBehaviour
         //will include chasing the player for a short time after leaving the visual field
         //  and will include a way to decide to pull player out of hiding spots if the player
         //  was seen as they hid. 
-    }
-    private bool PlayerLost()
-    {
-        if (canSeePlayer == false && _chaseTimer.IsTimerFinished())
-        {
-            _chaseTimer.IsTimerFinished();
-        }
-        return false;
     }
     private void InvestigateNoise() 
     {

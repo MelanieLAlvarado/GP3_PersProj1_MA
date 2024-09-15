@@ -23,6 +23,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject enemyPrefab;
     [SerializeField] private Transform enemySpawnLoc;
 
+    [Header("Other Info/Options")]
+    [SerializeField] private LayerMask visualMask;
     private void Awake()
     {
         if (m_Instance != null && m_Instance != this)
@@ -42,6 +44,7 @@ public class GameManager : MonoBehaviour
     public EnemyManager GetEnemyManager() { return enemyManager; }
 
     public UIManager GetUIManager() { return uIManager; }
+    public LayerMask GetVisualMask() {  return visualMask; }
 
     void Start()
     {
