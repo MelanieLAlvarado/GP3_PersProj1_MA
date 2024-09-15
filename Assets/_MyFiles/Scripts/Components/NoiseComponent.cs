@@ -38,19 +38,15 @@ public class NoiseComponent : MonoBehaviour
     public float GetRawNoiseAmount() { return _rawNoiseAmount; }
     public void TriggerNoise()
     {
-        Debug.Log($"{_ownerObject}'s Noise triggereed!");
+        //Debug.Log($"{_ownerObject}'s Noise triggereed!");
         _rawNoiseAmount = 100 * _currentNoiseMultiplier;
         if (!_noiseManager)
         {
             _noiseManager = GameManager.m_Instance.GetNoiseManager();
         }
-        if (this.gameObject && _ownerObject)
+        if (_noiseManager != null && _ownerObject != null)
         {
-            Debug.Log("Owner is present!");
-        }
-        if (_noiseManager != null && _ownerObject != null && !_noiseManager.IsObjInActiveNoiseList(_ownerObject))
-        {
-            //Debug.Log($"the gameobject is: {_ownerObject}");
+            Debug.Log($"the gameobject is: {_ownerObject}");
             _noiseManager.AddActiveNoiseSource(_ownerObject);
             _noiseManager.CheckNearbyHearingObjects();
         }

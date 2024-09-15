@@ -38,27 +38,24 @@ public class EnemyManager : MonoBehaviour
     }
     public void CheckEnemiesHearingRanges(List<GameObject> triggeredNoiseObjs)
     {
-        //Debug.Log("Checking all enemies...");
+        ///Checking every enemy in manager
+        Debug.Log("Chgeckgibns ing if lsit");
         for (int i = 0; i < _enemies.Count; i++)
         {
-            //Debug.Log(_enemies[i]);
+            Debug.Log("ENEMY CHECK");
             EnemyAI iEnemyAI = _enemies[i].GetComponent<EnemyAI>();
 
             HearingComponent enemyHearingComp = _enemies[i].GetComponent<HearingComponent>();
-
+            ///Checking every object from parameters
             for (int j = 0; j < triggeredNoiseObjs.Count; j++)
             {
-                //Debug.Log("Checking all noises...");
-                //1Debug.Log(triggeredNoiseObjs[j]);
-                //Debug.Log(enemyHearingComp.GetNoisesObjsInRangeList().Count);
-
+                Debug.Log("OBJECT CHECK");
                 if (enemyHearingComp.GetNoisesObjsInRangeList().Find(x => x.ToString() == triggeredNoiseObjs[j].ToString()))
                 {
-                    Debug.Log("Is Valid!!! [TEST]");
+                    Debug.Log("Is Valid!!!               [TEST]");
                     enemyHearingComp.AddToAudibleNoiseList(triggeredNoiseObjs[j]);
                 }
             }
         }
-        //clear/remove noise list objs????
     }
 }

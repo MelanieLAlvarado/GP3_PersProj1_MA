@@ -49,9 +49,9 @@ public class PlayerControls : MonoBehaviour
     private NoiseComponent _noiseComponent;
     private float _currentMultiplier;
     [SerializeField][Range(0, 1)] private float idleMultiplier = 0f;
-    [SerializeField][Range(0, 1)] private float sneakMultiplier = 0.2f;
-    [SerializeField][Range(0, 1)] private float walkMultiplier = 0.4f;
-    [SerializeField][Range(0, 1)] private float sprintMultiplier = 0.6f;
+    [SerializeField][Range(0, 1)] private float sneakMultiplier = 0.3f;
+    [SerializeField][Range(0, 1)] private float walkMultiplier = 0.5f;
+    [SerializeField][Range(0, 1)] private float sprintMultiplier = 0.7f;
 
 
     public EEntityType GetEntityType() { return entityType; }
@@ -131,7 +131,6 @@ public class PlayerControls : MonoBehaviour
         if (isHiding && targetInteractible.GetComponent<HidingInteraction>())
         {
             transform.position = targetInteractible.GetComponent<HidingInteraction>().GetHidePos().position;
-            Debug.Log("ProcessHide...");
         }
     }
     private void ProcessMovement()
@@ -177,7 +176,8 @@ public class PlayerControls : MonoBehaviour
     {
         ProcessNoiseType();
         if (_noiseComponent.GetCanMakeNoise())
-        { 
+        {
+            Debug.Log("TRiggerNOSIel");
             _noiseComponent.TriggerNoise();
         }    
         if (!_noiseComponent || _noiseComponent.GetNoiseMultiplier() == _currentMultiplier)
@@ -185,7 +185,6 @@ public class PlayerControls : MonoBehaviour
             return;
         }
         _noiseComponent.SetNoiseMultiplier(_currentMultiplier);
-        Debug.Log(_currentMultiplier);
     }
     private void ProcessNoiseType() 
     {

@@ -15,20 +15,15 @@ public class NoiseManager : MonoBehaviour
     }
     public void AddActiveNoiseSource(GameObject objToAdd)
     {
+        if (activeNoiseObjs.Find(x => x.ToString() == objToAdd.ToString()))
+        {
+            return;//is in list already
+        }
         activeNoiseObjs.Add(objToAdd);
     }
     public void ClearActiveNoiseSources() 
     {
         activeNoiseObjs.Clear();
-    }
-    public bool IsObjInActiveNoiseList(GameObject objToCheck) 
-    {
-        if (activeNoiseObjs.Contains(objToCheck))
-        {
-            Debug.Log($"{objToCheck} Is In The NoiseManager!!");
-            return true;
-        }
-        return false;
     }
     private void Start()
     {

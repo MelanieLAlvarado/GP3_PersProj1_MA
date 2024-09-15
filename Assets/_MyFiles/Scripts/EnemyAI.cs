@@ -64,10 +64,7 @@ public class EnemyAI : MonoBehaviour
         _waitTimer = GetComponents<TimerComponent>()[0];
         _waitTimer.SetTimerMax(waitTime);
         _waitTimer.ResetTimer();
-
-        Debug.Log(GetComponents<TimerComponent>().Length);
-
-     
+    
         _chaseTimer = gameObject.AddComponent<TimerComponent>();
         
         _chaseTimer.SetTimerMax(additionalChaseTime);
@@ -117,6 +114,8 @@ public class EnemyAI : MonoBehaviour
         {
             case EEnemyState.wait:
                 ///do nothing
+                tempCallPos.position = transform.position;
+                targetPos = tempCallPos;
                 _hearingComponent.ClearAudibleLists();
                 _waitTimer.ResetTimer();
                 //_waitTimer.SetRunTimer(true);
@@ -132,12 +131,9 @@ public class EnemyAI : MonoBehaviour
                 if (_hearingComponent.GetNoiseCalculatedValues().Count == 0 || targetPos == tempCallPos.transform)
                 {
                     targetPos = _hearingComponent.ChooseNoiseTarget();
-                    if (!targetPos)
+                    if (targetPos == null)
                     {
-                        targetPos = tempCallPos;
                         SetEnemyState(EEnemyState.wait);
-                        //_noiseManager.ClearActiveNoiseSources();//Might swap later
-                        //_hearingComponent.ClearAudibleLists();
                     }
                 }
                 InvestigateNoise();
@@ -157,6 +153,15 @@ public class EnemyAI : MonoBehaviour
                 break;
         }
     }
+    private bool IsTargetAtStoppingDistance() 
+    {
+        float targetDist = Vector3.Distance(transform.position, targetPos.position);
+        if (targetDist < _enemy_NavMeshAgent.stoppingDistance)
+        {
+            return true;
+        }
+        return false;
+    }
     private void GoToTarget() 
     {
         _enemy_NavMeshAgent.destination = targetPos.transform.position;
@@ -170,7 +175,11 @@ public class EnemyAI : MonoBehaviour
         {
             Debug.Log("Following Player!...");
             targetPos = playerRef.transform;
-            //_enemy_NavMeshAgent.destination = _targetPos.transform.position;
+            _enemy_NavMeshAgent.destination = targetPos.transform.position;
+            if (IsTargetAtStoppingDistance())
+            { 
+                
+            }
         }
         else 
         {
@@ -178,45 +187,7 @@ public class EnemyAI : MonoBehaviour
             SetEnemyState(EEnemyState.wait);
         }
     }
-    private void InvestigateNoise() 
-    {
-        Debug.Log("Investigating noise...");
-        _enemy_NavMeshAgent.destination = targetPos.transform.position;
-        float targetDist = Vector3.Distance(transform.position, targetPos.position);
-        Debug.Log(targetDist);
-        if (targetDist < _enemy_NavMeshAgent.stoppingDistance) 
-        {
-            _hearingComponent.ClearAudibleLists();
-            _noiseManager.ClearActiveNoiseSources();
-            SetEnemyState(EEnemyState.wait);
-        }
-    }
-    private void Roam() 
-    {
-        if (targetPos != null)
-        {
-            targetPos = tempCallPos;
-            float roamDist = Vector3.Distance(transform.position, targetPos.position);
-            targetPos.position = new Vector3(targetPos.position.x, transform.position.y, targetPos.position.z);
-            if (roamDist < _enemy_NavMeshAgent.stoppingDistance)
-            {
-                Vector3 point;
-                if (RandomPoint(transform.position, roamingRange, out point))
-                {
-                    Debug.DrawRay(point, Vector3.up, Color.blue, 1.0f);
-
-                    targetPos.position = new Vector3(point.x, transform.position.y, point.z);
-                }
-            }
-            _enemy_NavMeshAgent.destination = targetPos.transform.position;
-        }
-        else
-        {
-            targetPos = tempCallPos;
-            _enemy_NavMeshAgent.destination = targetPos.transform.position;
-        }
-    }
-    private bool FieldOfViewCheck() 
+    private bool FieldOfViewCheck()
     {
         Collider[] visualChecks = Physics.OverlapSphere(transform.position, visualRadius, visualTargetMask);
 
@@ -232,14 +203,13 @@ public class EnemyAI : MonoBehaviour
                 {
                     targetPos = visualTarget;
                     if (!PlayerHiddenCheck())
-                    { 
+                    {
                         canSeePlayer = true;
                     }
                     if (canSeePlayer == false)
                     {
-                        return false; ///player is correctly hidden
+                        return false; ///player hid before coming inside FOV
                     }
-                    //_chaseTimer.ResetTimer();
                     return true; ///if the visual target within the angle, range, and not obtructed: then chase
                 }
                 canSeePlayer = false;
@@ -249,7 +219,7 @@ public class EnemyAI : MonoBehaviour
         canSeePlayer = false;
         return false; /// There's nothing in the sphere as a visual target mask or in the angle of the FOV
     }
-    private bool PlayerHiddenCheck() 
+    private bool PlayerHiddenCheck()
     {
         EPlayerState tempPlayerState = playerRef.GetComponent<PlayerControls>().GetPlayerState();
         if (tempPlayerState == EPlayerState.hiding)//&& _chaseTimer.IsTimerFinished()/* && !_isPlayerLostCoolDown*/) 
@@ -270,6 +240,50 @@ public class EnemyAI : MonoBehaviour
         //  and will include a way to decide to pull player out of hiding spots if the player
         //  was seen as they hid. 
     }
+    private bool PlayerLost()
+    {
+        if (canSeePlayer == false && _chaseTimer.IsTimerFinished())
+        {
+            _chaseTimer.IsTimerFinished();
+        }
+        return false;
+    }
+    private void InvestigateNoise() 
+    {
+        Debug.Log("Investigating noise...");
+        _enemy_NavMeshAgent.destination = targetPos.transform.position;
+        if (IsTargetAtStoppingDistance()) 
+        {
+            _noiseManager.ClearActiveNoiseSources();
+            _hearingComponent.ClearAudibleLists();
+            SetEnemyState(EEnemyState.wait);
+        }
+    }
+    private void Roam() 
+    {
+        if (targetPos != null)
+        {
+            targetPos = tempCallPos;
+            targetPos.position = new Vector3(targetPos.position.x, transform.position.y, targetPos.position.z);
+            if (IsTargetAtStoppingDistance())
+            {
+                Vector3 point;
+                if (RandomPoint(transform.position, roamingRange, out point))
+                {
+                    Debug.DrawRay(point, Vector3.up, Color.blue, 1.0f);
+
+                    targetPos.position = new Vector3(point.x, transform.position.y, point.z);
+                }
+            }
+            _enemy_NavMeshAgent.destination = targetPos.transform.position;
+        }
+        else
+        {
+            targetPos = tempCallPos;
+            _enemy_NavMeshAgent.destination = targetPos.transform.position;
+        }
+    }
+
     private bool RandomPoint(Vector3 center, float range, out Vector3 result) 
     {
         Vector3 randomPoint = center + Random.insideUnitSphere * range;
