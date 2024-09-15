@@ -9,9 +9,11 @@ public class EnemyAI : MonoBehaviour
 {
     private NoiseManager _noiseManager;
     private HearingComponent _hearingComponent;
-    private TimerComponent _timerComponent;
+    private TimerComponent _waitTimer;
+    private TimerComponent _chaseTimer;
     [SerializeField] EEnemyState enemyState;
     [Range(0f, 10f)][SerializeField] private float waitTime = 1.5f;
+    [Range(0f, 10f)][SerializeField] private float additionalChaseTime = 2f;
     [Range(1.0f, 30.0f)][SerializeField] float roamingRange = 20f;
 
     [Header("Manager Info [Read Only]")]
@@ -36,7 +38,8 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] private LayerMask visualTargetMask;
     [SerializeField] private LayerMask obstructionMask;
     [SerializeField] [Range(0, 30)] private float playerLostCooldown;
-    private bool _canSeePlayer;
+    [SerializeField] private bool canSeePlayer;
+
     private bool _isPlayerLostCoolDown; //This is a cooldown after the player left FOV
 
     //may add a timer to follow, even after player leaves visual field...
@@ -57,10 +60,15 @@ public class EnemyAI : MonoBehaviour
 
         _noiseManager = GameManager.m_Instance.GetComponent<NoiseManager>();
         _hearingComponent = GetComponent<HearingComponent>();
-        _timerComponent = GetComponent<TimerComponent>();
-        _timerComponent.SetTimerMax(waitTime);
-        _timerComponent.ResetTimer();
-
+        
+        _waitTimer = GetComponents<TimerComponent>()[0];
+        _waitTimer.SetTimerMax(waitTime);
+        _waitTimer.ResetTimer();
+    
+        _chaseTimer = gameObject.AddComponent<TimerComponent>();
+        
+        _chaseTimer.SetTimerMax(additionalChaseTime);
+        _chaseTimer.ResetTimer();
 
         SetEnemyState(EEnemyState.wait);
     }
@@ -69,14 +77,14 @@ public class EnemyAI : MonoBehaviour
         ///separate second part into a separate piece... (will determine if enemy chases player or not while hiding)
         ///
 
-        if (enemyState == EEnemyState.wait && !_timerComponent.IsTimerFinished())
+        if (enemyState == EEnemyState.wait && !_waitTimer.IsTimerFinished())
         {
             ///Waiting based on timer component
             return;
         }
 
         //timer for when player is lost?
-        if (FieldOfViewCheck() && !PlayerHiddenCheck())
+        if (FieldOfViewCheck())
         {
             SetEnemyState(EEnemyState.chase);
         }
@@ -106,8 +114,11 @@ public class EnemyAI : MonoBehaviour
         {
             case EEnemyState.wait:
                 ///do nothing
+                tempCallPos.position = transform.position;
+                targetPos = tempCallPos;
                 _hearingComponent.ClearAudibleLists();
-                _timerComponent.ResetTimer();
+                _waitTimer.ResetTimer();
+                //_waitTimer.SetRunTimer(true);
                 break;
             case EEnemyState.roam:
                 Roam(); //Add wait functionality
@@ -120,12 +131,9 @@ public class EnemyAI : MonoBehaviour
                 if (_hearingComponent.GetNoiseCalculatedValues().Count == 0 || targetPos == tempCallPos.transform)
                 {
                     targetPos = _hearingComponent.ChooseNoiseTarget();
-                    if (!targetPos)
+                    if (targetPos == null)
                     {
-                        targetPos = tempCallPos;
-                        //_noiseManager.ClearActiveNoiseSources();//Might swap later
-                        //_hearingComponent.ClearAudibleLists();
-                        return;
+                        SetEnemyState(EEnemyState.wait);
                     }
                 }
                 InvestigateNoise();
@@ -145,6 +153,15 @@ public class EnemyAI : MonoBehaviour
                 break;
         }
     }
+    private bool IsTargetAtStoppingDistance() 
+    {
+        float targetDist = Vector3.Distance(transform.position, targetPos.position);
+        if (targetDist < _enemy_NavMeshAgent.stoppingDistance)
+        {
+            return true;
+        }
+        return false;
+    }
     private void GoToTarget() 
     {
         _enemy_NavMeshAgent.destination = targetPos.transform.position;
@@ -158,7 +175,11 @@ public class EnemyAI : MonoBehaviour
         {
             Debug.Log("Following Player!...");
             targetPos = playerRef.transform;
-            //_enemy_NavMeshAgent.destination = _targetPos.transform.position;
+            _enemy_NavMeshAgent.destination = targetPos.transform.position;
+            if (IsTargetAtStoppingDistance())
+            { 
+                
+            }
         }
         else 
         {
@@ -166,22 +187,75 @@ public class EnemyAI : MonoBehaviour
             SetEnemyState(EEnemyState.wait);
         }
     }
-    private void CheckHidingPlace() 
+    private bool FieldOfViewCheck()
+    {
+        Collider[] visualChecks = Physics.OverlapSphere(transform.position, visualRadius, visualTargetMask);
+
+        if (visualChecks.Length != 0)
+        {
+            Transform visualTarget = visualChecks[0].transform;
+            Vector3 directionToTarget = (visualTarget.position - transform.position).normalized; ///raw direction vector
+            if (Vector3.Angle(transform.forward, directionToTarget) < visualAngle / 2)
+            {///  ^--- creating the FOV angle from forward vector by halfing the angle and distributing it equally on both sides
+
+                float distanceToTarget = Vector3.Distance(transform.position, visualTarget.position);
+                if (!Physics.Raycast(transform.position, directionToTarget, distanceToTarget, obstructionMask))
+                {
+                    targetPos = visualTarget;
+                    if (!PlayerHiddenCheck())
+                    {
+                        canSeePlayer = true;
+                    }
+                    if (canSeePlayer == false)
+                    {
+                        return false; ///player hid before coming inside FOV
+                    }
+                    return true; ///if the visual target within the angle, range, and not obtructed: then chase
+                }
+                canSeePlayer = false;
+                return false; /// The visual target is not within the angle of the FOV
+            }
+        }
+        canSeePlayer = false;
+        return false; /// There's nothing in the sphere as a visual target mask or in the angle of the FOV
+    }
+    private bool PlayerHiddenCheck()
+    {
+        EPlayerState tempPlayerState = playerRef.GetComponent<PlayerControls>().GetPlayerState();
+        if (tempPlayerState == EPlayerState.hiding)//&& _chaseTimer.IsTimerFinished()/* && !_isPlayerLostCoolDown*/) 
+        {
+            ///return !_chaseTimer.IsTimerFinished();
+            /*if (!_canSeePlayer)
+            { 
+                return true; 
+            }*/
+            //return false;
+            return true;
+        }
+        return false;
+    }
+    private void CheckHidingPlace()
     {
         //will include chasing the player for a short time after leaving the visual field
         //  and will include a way to decide to pull player out of hiding spots if the player
         //  was seen as they hid. 
     }
+    private bool PlayerLost()
+    {
+        if (canSeePlayer == false && _chaseTimer.IsTimerFinished())
+        {
+            _chaseTimer.IsTimerFinished();
+        }
+        return false;
+    }
     private void InvestigateNoise() 
     {
         Debug.Log("Investigating noise...");
         _enemy_NavMeshAgent.destination = targetPos.transform.position;
-        float targetDist = Vector3.Distance(transform.position, targetPos.position);
-        Debug.Log(targetDist);
-        if (targetDist < _enemy_NavMeshAgent.stoppingDistance) 
+        if (IsTargetAtStoppingDistance()) 
         {
-            _hearingComponent.ClearAudibleLists();
             _noiseManager.ClearActiveNoiseSources();
+            _hearingComponent.ClearAudibleLists();
             SetEnemyState(EEnemyState.wait);
         }
     }
@@ -190,9 +264,8 @@ public class EnemyAI : MonoBehaviour
         if (targetPos != null)
         {
             targetPos = tempCallPos;
-            float roamDist = Vector3.Distance(transform.position, targetPos.position);
             targetPos.position = new Vector3(targetPos.position.x, transform.position.y, targetPos.position.z);
-            if (roamDist < _enemy_NavMeshAgent.stoppingDistance)
+            if (IsTargetAtStoppingDistance())
             {
                 Vector3 point;
                 if (RandomPoint(transform.position, roamingRange, out point))
@@ -210,39 +283,7 @@ public class EnemyAI : MonoBehaviour
             _enemy_NavMeshAgent.destination = targetPos.transform.position;
         }
     }
-    private bool FieldOfViewCheck() 
-    {
-        Collider[] visualChecks = Physics.OverlapSphere(transform.position, visualRadius, visualTargetMask);
 
-        if (visualChecks.Length != 0)
-        {
-            Transform visualTarget = visualChecks[0].transform;
-            Vector3 directionToTarget = (visualTarget.position - transform.position).normalized; ///raw direction vector
-            if (Vector3.Angle(transform.forward, directionToTarget) < visualAngle / 2)
-            {///  ^--- creating the FOV angle from forward vector by halfing the angle and distributing it equally on both sides
-
-                float distanceToTarget = Vector3.Distance(transform.position, visualTarget.position);
-                if (!Physics.Raycast(transform.position, directionToTarget, distanceToTarget, obstructionMask))
-                {
-                    targetPos = visualTarget;
-                    return true; ///if the visual target within the angle, range, and not obtructed: then chase
-                }
-                return false; /// The visual target is not within the angle of the FOV
-            }
-        }
-        return false; /// There's nothing in the sphere as a visual target mask or in the angle of the FOV
-    }
-    private bool PlayerHiddenCheck() 
-    {
-        EPlayerState tempPlayerState = playerRef.GetComponent<PlayerControls>().GetPlayerState();
-        //_timerComponent.SetTimerMax(playerLostCooldown);
-        //_isPlayerLostCoolDown = !_timerComponent.IsTimerFinished();
-        if (tempPlayerState == EPlayerState.hiding/* && !_isPlayerLostCoolDown*/) 
-        {
-            return true; 
-        }
-        return false;
-    }
     private bool RandomPoint(Vector3 center, float range, out Vector3 result) 
     {
         Vector3 randomPoint = center + Random.insideUnitSphere * range;
