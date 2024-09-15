@@ -5,7 +5,6 @@ using UnityEngine;
 using UnityEngine.AI;
 [RequireComponent(typeof(HearingComponent))]
 [RequireComponent(typeof(TimerComponent))]
-[RequireComponent(typeof(TimerComponent))]
 public class EnemyAI : MonoBehaviour
 {
     private NoiseManager _noiseManager;
@@ -39,7 +38,8 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] private LayerMask visualTargetMask;
     [SerializeField] private LayerMask obstructionMask;
     [SerializeField] [Range(0, 30)] private float playerLostCooldown;
-    private bool _canSeePlayer;
+    [SerializeField] private bool canSeePlayer;
+
     private bool _isPlayerLostCoolDown; //This is a cooldown after the player left FOV
 
     //may add a timer to follow, even after player leaves visual field...
@@ -65,7 +65,11 @@ public class EnemyAI : MonoBehaviour
         _waitTimer.SetTimerMax(waitTime);
         _waitTimer.ResetTimer();
 
-        _chaseTimer = GetComponents<TimerComponent>()[1];
+        Debug.Log(GetComponents<TimerComponent>().Length);
+
+     
+        _chaseTimer = gameObject.AddComponent<TimerComponent>();
+        
         _chaseTimer.SetTimerMax(additionalChaseTime);
         _chaseTimer.ResetTimer();
 
@@ -83,7 +87,7 @@ public class EnemyAI : MonoBehaviour
         }
 
         //timer for when player is lost?
-        if ((FieldOfViewCheck() && !PlayerHiddenCheck())/* || !_chaseTimer.IsTimerFinished()*/)
+        if (FieldOfViewCheck())
         {
             SetEnemyState(EEnemyState.chase);
         }
@@ -227,23 +231,36 @@ public class EnemyAI : MonoBehaviour
                 if (!Physics.Raycast(transform.position, directionToTarget, distanceToTarget, obstructionMask))
                 {
                     targetPos = visualTarget;
+                    if (!PlayerHiddenCheck())
+                    { 
+                        canSeePlayer = true;
+                    }
+                    if (canSeePlayer == false)
+                    {
+                        return false; ///player is correctly hidden
+                    }
                     //_chaseTimer.ResetTimer();
                     return true; ///if the visual target within the angle, range, and not obtructed: then chase
                 }
+                canSeePlayer = false;
                 return false; /// The visual target is not within the angle of the FOV
             }
         }
+        canSeePlayer = false;
         return false; /// There's nothing in the sphere as a visual target mask or in the angle of the FOV
     }
     private bool PlayerHiddenCheck() 
     {
         EPlayerState tempPlayerState = playerRef.GetComponent<PlayerControls>().GetPlayerState();
-        //_timerComponent.SetTimerMax(playerLostCooldown);
-        //_isPlayerLostCoolDown = !_timerComponent.IsTimerFinished();
-        if (tempPlayerState == EPlayerState.hiding/* && !_isPlayerLostCoolDown*/) 
+        if (tempPlayerState == EPlayerState.hiding)//&& _chaseTimer.IsTimerFinished()/* && !_isPlayerLostCoolDown*/) 
         {
             ///return !_chaseTimer.IsTimerFinished();
-            return true; 
+            /*if (!_canSeePlayer)
+            { 
+                return true; 
+            }*/
+            //return false;
+            return true;
         }
         return false;
     }

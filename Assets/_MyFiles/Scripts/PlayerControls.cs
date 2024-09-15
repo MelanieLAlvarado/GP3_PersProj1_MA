@@ -81,7 +81,7 @@ public class PlayerControls : MonoBehaviour
         }
         else
         {
-            playerState = EPlayerState.walking;
+            playerState = EPlayerState.idle;
         }
     }
     private void Start()
