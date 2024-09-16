@@ -1,10 +1,13 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
     //build noisemeter visual and interaction text here.
     //might add a debug menu as well
+    [Header("UI Elements")]
+    [SerializeField] private Slider noiseMeter;
     [SerializeField] private TextMeshProUGUI interactionText;
     public void SetInteractionText(string textToSet) 
     {
@@ -16,8 +19,10 @@ public class UIManager : MonoBehaviour
         interactionText.text = "";
         interactionText.gameObject.SetActive(false);
     }
-    public void UpdateNoiseMeter() 
+    public void UpdateNoiseMeterUI(float valToUpdate) 
     {
-        
+        Debug.Log(valToUpdate);
+
+        noiseMeter.value = valToUpdate;
     }
 }

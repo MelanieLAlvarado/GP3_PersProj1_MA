@@ -39,14 +39,9 @@ public class EnemyManager : MonoBehaviour
     public void CheckEnemiesHearingRanges(List<GameObject> triggeredNoiseObjs)
     {
         ///Checking every enemy in manager
-        Debug.Log("Chgeckgibns ing if lsit");
         for (int i = 0; i < _enemies.Count; i++)
         {
-            Debug.Log("ENEMY CHECK");
-            EnemyAI iEnemyAI = _enemies[i].GetComponent<EnemyAI>();
-
             HearingComponent enemyHearingComp = _enemies[i].GetComponent<HearingComponent>();
-
             ///Checking every object from parameters
             enemyHearingComp.CheckHearingRange(triggeredNoiseObjs);
         }

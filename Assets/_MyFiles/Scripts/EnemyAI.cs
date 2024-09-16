@@ -130,7 +130,6 @@ public class EnemyAI : MonoBehaviour
             case EEnemyState.curious:
                 ///swap target to an audible sound
 
-                //bool isOtherTarget = targetPos == playerRef.transform || targetPos == tempCallPos.transform;
                 if (_hearingComponent.GetNoiseCalculatedValues().Count == 0 || targetPos == tempCallPos.transform)
                 {
                     targetPos = _hearingComponent.ChooseNoiseTarget();
@@ -152,7 +151,7 @@ public class EnemyAI : MonoBehaviour
                 }
                 ChasePlayer();
                 GoToTarget();
-                CheckHidingPlace();
+                PullPlayerFromHidingPlace();
                 break;
         }
     }
@@ -180,8 +179,15 @@ public class EnemyAI : MonoBehaviour
             targetPos = playerRef.transform;
             _enemy_NavMeshAgent.destination = targetPos.transform.position;
             if (IsTargetAtStoppingDistance())
-            { 
-                
+            {
+                if (canSeePlayer && PlayerHiddenCheck())
+                { 
+                    PullPlayerFromHidingPlace();//<-- still needs to be programmed
+                }
+                if (!PlayerHiddenCheck())
+                {
+                    //end player here!!
+                }
             }
         }
         else 
@@ -225,7 +231,7 @@ public class EnemyAI : MonoBehaviour
     private bool PlayerHiddenCheck()
     {
         EPlayerState tempPlayerState = playerRef.GetComponent<PlayerControls>().GetPlayerState();
-        if (tempPlayerState == EPlayerState.hiding)//&& _chaseTimer.IsTimerFinished()/* && !_isPlayerLostCoolDown*/) 
+        if (tempPlayerState == EPlayerState.hiding) 
         {
             ///return !_chaseTimer.IsTimerFinished();
             /*if (!_canSeePlayer)
@@ -237,7 +243,7 @@ public class EnemyAI : MonoBehaviour
         }
         return false;
     }
-    private void CheckHidingPlace()
+    private void PullPlayerFromHidingPlace()
     {
         //will include chasing the player for a short time after leaving the visual field
         //  and will include a way to decide to pull player out of hiding spots if the player

@@ -43,13 +43,13 @@ public class NoiseManager : MonoBehaviour
 
     public void CheckNearbyHearingObjects() 
     {
-        Debug.Log("CHECKING HEARNIG!!!");
         if (GameManager.m_Instance.GetPlayer())
         {
             _playerRef = GameManager.m_Instance.GetPlayer().GetComponent<PlayerControls>();
         }
         if (_playerRef.GetComponent<HearingComponent>()) 
         {
+            Debug.Log("PLAYER HAS A HEARING COMPONENT");
             _playerRef.GetComponent<HearingComponent>().CheckHearingRange(activeNoiseObjs);
         }
         _enemyManager.CheckEnemiesHearingRanges(activeNoiseObjs);

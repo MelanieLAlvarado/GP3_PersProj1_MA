@@ -5,16 +5,20 @@ using UnityEngine;
 public class HearingComponent : MonoBehaviour
 {
     //WIP rework to function on player
-    NoiseManager _noiseManager;
+    private NoiseManager _noiseManager;
+    private UIManager _uIManager;
     [Header("Hearing Options")]
     [Range(1.0f, 50.0f)][SerializeField] float hearingRange = 30.0f;
     [Range(0f, 100f)][SerializeField] float hearingThreshold = 20.0f;
     private bool _areNoisesInaudible = true;
+    private bool _canDetectSelf = false;
 
     [Header("Hearing List Info [READ ONLY]")]
     [SerializeField] private List<GameObject> noiseObjsInRange = new List<GameObject>();
     [SerializeField] private List<GameObject> audibleNoiseList = new List<GameObject>();
     [SerializeField] private List<float> noiseCalculatedValues = new List<float>();
+    private float targetNoiseCalculatedValue = 0.0f;
+
     public bool GetAreNoisesInaudible() { return _areNoisesInaudible; }
     public List<GameObject> GetNoisesObjsInRangeList() { return noiseObjsInRange; }
     public List<float> GetNoiseCalculatedValues() { return noiseCalculatedValues; }
@@ -22,17 +26,30 @@ public class HearingComponent : MonoBehaviour
     {
         return audibleNoiseList.Count > 0; 
     }
+    public void SetCanDetectSelf(bool detectToSet) 
+    {
+        _canDetectSelf = detectToSet;
+    }
+    public void SetHearingThreshold(float amountToSet) 
+    {
+        hearingThreshold = amountToSet;
+    }
     public void CheckHearingRange(List<GameObject> listToCheck) 
     {
         for (int j = 0; j < listToCheck.Count; j++)
         {
             Debug.Log("OBJECT CHECK");
-            if (noiseObjsInRange.Find(x => x.ToString() == listToCheck.ToString()))
+            if (noiseObjsInRange.Find(x => x.ToString() == listToCheck[j].ToString()))
             {
                 Debug.Log("Is Valid!!!               [TEST]");
                 AddToAudibleNoiseList(listToCheck[j]);
             }
         }
+    }
+    public void UpdateNoiseMeter() //used by player. may move later
+    {
+        _uIManager = GameManager.m_Instance.GetUIManager();
+        _uIManager.UpdateNoiseMeterUI(targetNoiseCalculatedValue);
     }
     private void Start()
     {
@@ -51,6 +68,10 @@ public class HearingComponent : MonoBehaviour
             rigidBody.useGravity = false;
             rigidBody.isKinematic = true;
             rigidBody.constraints = RigidbodyConstraints.FreezeAll;
+        }
+        if (this.gameObject.GetComponent<NoiseComponent>() && _canDetectSelf == true)
+        {
+            noiseObjsInRange.Add(this.gameObject);
         }
     }
     private void AddToAudibleNoiseList(GameObject noiseToAdd)
@@ -85,17 +106,16 @@ public class HearingComponent : MonoBehaviour
         return noiseComp.GetRawNoiseAmount() * distMultiplier;
     }
 
-    private void CalculateNoiseValues() // separate hearing range on component instead??
+    private void CalculateNoiseValues()
     {
-        if (audibleNoiseList.Count > 0) //might find a more understandable way to gauge sound value later...
+        if (audibleNoiseList.Count > 0)
         {
-            for (int i = 0; i < audibleNoiseList.Count; i++) //calculate sound values
+            for (int i = 0; i < audibleNoiseList.Count; i++)
             {
                 float noiseCalcVal = CalculateSingleNoiseValue(audibleNoiseList[i]);
                 noiseCalculatedValues.Add(noiseCalcVal);
             }
         }
-        //Choose noise target
     }
     public Transform ChooseNoiseTarget()
     {
@@ -116,12 +136,15 @@ public class HearingComponent : MonoBehaviour
         targetPos = audibleNoiseList[index].transform;
         //Debug.Log($"noiseNum == {noiseNum}!");
         _noiseManager.ClearActiveNoiseList();
+
+        targetNoiseCalculatedValue = noiseCalculatedValues[index];
         noiseCalculatedValues.Clear();
         if (noiseNum > hearingThreshold)
         {
             _areNoisesInaudible = false;
             return targetPos;
         }
+        targetNoiseCalculatedValue = 0.0f;
         _areNoisesInaudible = true;
         return null;
     }

@@ -9,6 +9,7 @@ using Vector3 = UnityEngine.Vector3;
 [RequireComponent(typeof(PlayerInput))]
 [RequireComponent(typeof(NoiseComponent))]
 [RequireComponent(typeof(HearingComponent))]
+[RequireComponent(typeof(TimerComponent))]
 public class PlayerControls : MonoBehaviour
 {
     [SerializeField] private EEntityType entityType = EEntityType.Player;
@@ -47,6 +48,7 @@ public class PlayerControls : MonoBehaviour
     private Vector3 _prevHidePos;
 
     [Header("Noise Options")]
+    [SerializeField][Range(0, 50)] private float hearingThreshold = 0.0f;
     private NoiseComponent _noiseComponent;
     private float _currentMultiplier;
     [SerializeField][Range(0, 1)] private float idleMultiplier = 0f;
@@ -55,8 +57,7 @@ public class PlayerControls : MonoBehaviour
     [SerializeField][Range(0, 1)] private float sprintMultiplier = 0.7f;
 
     private HearingComponent _hearingComponent;
-    private UIManager _uIManager;
-
+    private TimerComponent _timerComponent;
     public EEntityType GetEntityType() { return entityType; }
     public EPlayerState GetPlayerState() { return playerState; }
 
@@ -96,7 +97,9 @@ public class PlayerControls : MonoBehaviour
 
         _noiseComponent = GetComponent<NoiseComponent>();
         _hearingComponent = GetComponent<HearingComponent>();
-        _uIManager = GameManager.m_Instance.GetUIManager();
+        _timerComponent = GetComponent<TimerComponent>();
+
+        _timerComponent.SetTimerMax(1.0f);
 
         _isSneaking = false;
         _isSprinting = false;
@@ -107,6 +110,9 @@ public class PlayerControls : MonoBehaviour
 
         isInteracting = false;
         isHiding = false;
+
+        _hearingComponent.SetCanDetectSelf(true);
+        _hearingComponent.SetHearingThreshold(hearingThreshold);
     }
 
     private void FixedUpdate()
@@ -143,9 +149,20 @@ public class PlayerControls : MonoBehaviour
         if (_defaultMovement == true && !isHiding)
         {
             Vector2 inputVector = _playerInputActions.Player.Move.ReadValue<Vector2>();
-            if (inputVector.x == 0 && inputVector.y == 0)
+            if (!_isSprinting)
             {
-                playerState = EPlayerState.idle;
+                if (inputVector.x == 0 && inputVector.y == 0)
+                {
+                    playerState = EPlayerState.idle;
+                }
+                else if (_isSneaking) 
+                {
+                    playerState = EPlayerState.sneaking;
+                }
+                else
+                {
+                    playerState = EPlayerState.walking;
+                }
             }
             Vector3 movementDirection = new Vector3(inputVector.x, 0, inputVector.y);
             _playerController.Move(transform.TransformDirection(movementDirection) * (speed * Time.deltaTime));
@@ -178,13 +195,21 @@ public class PlayerControls : MonoBehaviour
     }
     private void ProcessNoisesHeard()
     {
-        if (_hearingComponent && !_hearingComponent.GetAreNoisesInaudible())
-        {
-            _uIManager.UpdateNoiseMeter();
+        if (_hearingComponent && _hearingComponent.GetIsAudibleNoisesPresent())
+        {///not using transform, but getting float values calculated for noisemeter
+            Debug.Log("player hears a noise!!!");
+            _hearingComponent.ChooseNoiseTarget();
+            _hearingComponent.UpdateNoiseMeter();
+            if (_timerComponent.IsTimerFinished())
+            { 
+                _hearingComponent.ClearAudibleLists();
+                _timerComponent.ResetTimer();
+            }
         }
     }
     private void ProcessNoise() 
     {
+        ProcessNoisesHeard();
         ProcessNoiseType();
         if (_noiseComponent.GetCanMakeNoise())
         {
