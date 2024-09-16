@@ -6,7 +6,13 @@ public class HidingInteraction : MonoBehaviour, IInterActions
     PlayerControls _player;
     [SerializeField] private Transform hidePos;
     Transform _playerLastPos; //will used for remembering the player's location before hiding
-
+    [SerializeField][Range(0, 5)] private float detectionRange = 2f; ///Edit sphere collider size on start
+    private void Start()
+    {
+        SphereCollider detectionCollider = gameObject.AddComponent<SphereCollider>();
+        detectionCollider.isTrigger = true;
+        detectionCollider.radius = detectionRange;
+    }
     public Transform GetHidePos() { return hidePos; } //(WIP)
     public EEntityType GetEntityType()
     {
