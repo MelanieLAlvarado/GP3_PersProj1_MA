@@ -34,15 +34,14 @@ public class HearingComponent : MonoBehaviour
     {
         hearingThreshold = amountToSet;
     }
-    public void CheckHearingRange(List<GameObject> listToCheck) 
+    public void CheckHearingRange(List<GameObject> soundsToCheck) 
     {
-        for (int j = 0; j < listToCheck.Count; j++)
+        for (int j = 0; j < soundsToCheck.Count; j++)
         {
-            //Debug.Log("OBJECT CHECK");
-            if (noiseObjsInRange.Find(x => x.ToString() == listToCheck[j].ToString()))
+            Debug.Log("OBJECT CHECK");
+            if (IsInHearingRange(soundsToCheck[j].transform))
             {
-                //Debug.Log("Is Valid!!!               [TEST]");
-                AddToAudibleNoiseList(listToCheck[j]);
+                AddToAudibleNoiseList(soundsToCheck[j]);
             }
         }
     }
@@ -59,7 +58,6 @@ public class HearingComponent : MonoBehaviour
         colliderRange.isTrigger = true;
         colliderRange.radius = hearingRange;
         LayerMask visualMask = GameManager.m_Instance.GetVisualMask();
-        Debug.Log("added layer");
         colliderRange.excludeLayers += visualMask;
 
         if (this.gameObject.GetComponent<EnemyAI>()) 
@@ -84,13 +82,11 @@ public class HearingComponent : MonoBehaviour
         if (CalculateSingleNoiseValue(noiseToAdd) >= hearingThreshold)
         {
             Debug.Log("Noise has been added...");
+            
             audibleNoiseList.Add(noiseToAdd);
         }
-        else
-        {
-            Debug.Log("Noise is inaudible! wasn't added to list.");
-            _noiseManager.RemoveActiveNoise(noiseToAdd);
-        }
+        Debug.Log("Noise is inaudible! wasn't added to list.");
+        _noiseManager.RemoveActiveNoise(noiseToAdd);//might remove
     }
     private float CalculateSingleNoiseValue(GameObject objToReceive)
     {
@@ -149,6 +145,16 @@ public class HearingComponent : MonoBehaviour
     {
         audibleNoiseList.Clear();
         noiseCalculatedValues.Clear();
+    }
+
+    private bool IsInHearingRange(Transform otherObject) 
+    {
+        float distanceFromOwner = Vector3.Distance(transform.position, otherObject.position);
+        if (distanceFromOwner < hearingRange)
+        {
+            return true;
+        }
+        return false;
     }
 
     private void OnTriggerEnter(Collider other)

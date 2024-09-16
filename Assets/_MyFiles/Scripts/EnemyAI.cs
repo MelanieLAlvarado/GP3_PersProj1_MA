@@ -138,7 +138,7 @@ public class EnemyAI : MonoBehaviour
                     targetPos = _hearingComponent.ChooseNoiseTarget();
                     if (targetPos == null)
                     {
-                        SetEnemyState(EEnemyState.wait);
+                        SetEnemyState(EEnemyState.wait);//may replace with a continue chase timer
                     }
                 }
                 InvestigateNoise();
@@ -154,7 +154,6 @@ public class EnemyAI : MonoBehaviour
                 }
                 ChasePlayer();
                 GoToTarget();
-                PullPlayerFromHidingPlace(); //<--(WIP)
                 break;
         }
     }
@@ -201,6 +200,7 @@ public class EnemyAI : MonoBehaviour
     }
     private bool FieldOfViewCheck()
     {
+        
         Collider[] visualChecks = Physics.OverlapSphere(transform.position, visualRadius, visualTargetMask, QueryTriggerInteraction.Ignore);
 
         if (visualChecks.Length != 0)
@@ -236,12 +236,6 @@ public class EnemyAI : MonoBehaviour
         EPlayerState tempPlayerState = playerRef.GetComponent<PlayerControls>().GetPlayerState();
         if (tempPlayerState == EPlayerState.hiding) 
         {
-            ///return !_chaseTimer.IsTimerFinished();
-            /*if (!_canSeePlayer)
-            { 
-                return true; 
-            }*/
-            //return false;
             return true;
         }
         return false;
@@ -258,7 +252,7 @@ public class EnemyAI : MonoBehaviour
         _enemy_NavMeshAgent.destination = targetPos.transform.position;
         if (IsTargetAtStoppingDistance()) 
         {
-            _noiseManager.ClearActiveNoiseSources();
+            _noiseManager.ClearActiveNoiseSources();//May change
             _hearingComponent.ClearAudibleLists();
             SetEnemyState(EEnemyState.wait);
         }

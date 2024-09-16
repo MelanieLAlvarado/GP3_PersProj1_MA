@@ -16,7 +16,7 @@ public class PlayerControls : MonoBehaviour
 {
     [Header("Player Enum Info [READ ONLY]")]
     [SerializeField] private EEntityType entityType = EEntityType.Player;
-    [SerializeField] private EPlayerState playerState;
+    [SerializeField] private EPlayerState playerState; ///(Idle, Sneaking, Walking, Sprinting, Hiding)
 
     private PlayerInputActions _playerInputActions;
     private CharacterController _playerController;
@@ -205,7 +205,7 @@ public class PlayerControls : MonoBehaviour
             Debug.Log("player hears a noise!!!");
             _hearingComponent.ChooseNoiseTarget();
             _hearingComponent.UpdateNoiseMeter();
-            if (_timerComponent.IsTimerFinished())
+            if (_timerComponent.IsTimerFinished()) ///1.0f second wait time
             { 
                 _hearingComponent.ClearAudibleLists();
                 _timerComponent.ResetTimer();
