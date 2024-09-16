@@ -47,11 +47,14 @@ public class HidingInteraction : MonoBehaviour, IInterActions
     }
     private void OnTriggerEnter(Collider other)
     {
-        _player = other.GetComponent<PlayerControls>();
-        if (_player && _player.GetEntityType() == EEntityType.Player)
+        if (other.GetComponent<PlayerControls>())
         {
-            //Debug.Log("near hiding place");
-            _player.SetTargetInteractible(this.gameObject);
+            _player = other.GetComponent<PlayerControls>();
+            if (_player.GetEntityType() == EEntityType.Player)
+            { 
+                //Debug.Log("near hiding place");
+                _player.SetTargetInteractible(this.gameObject);
+            }
         }
     }
     private void OnTriggerExit(Collider other)

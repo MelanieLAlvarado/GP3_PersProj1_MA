@@ -80,6 +80,7 @@ public class PlayerControls : MonoBehaviour
     }
     public void ToggleIsHiding()
     {
+        Debug.Log("toggle Hide!");
         isHiding = !isHiding;
         if (isHiding)
         {
@@ -217,7 +218,7 @@ public class PlayerControls : MonoBehaviour
         ProcessNoiseType(); ///checking type and setting current multiplier
         if (_noiseComponent.GetCanMakeNoise())
         {
-            Debug.Log("TRiggerNOSIel");
+            //Debug.Log("TRiggerNOSIel");
             _noiseComponent.TriggerNoise();
         }
         if (!_noiseComponent || _noiseComponent.GetNoiseMultiplier() == _currentMultiplier)

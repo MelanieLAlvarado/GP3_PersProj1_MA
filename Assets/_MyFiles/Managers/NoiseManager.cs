@@ -49,7 +49,6 @@ public class NoiseManager : MonoBehaviour
         }
         if (_playerRef.GetComponent<HearingComponent>()) 
         {
-            Debug.Log("PLAYER HAS A HEARING COMPONENT");
             _playerRef.GetComponent<HearingComponent>().CheckHearingRange(activeNoiseObjs);
         }
         _enemyManager.CheckEnemiesHearingRanges(activeNoiseObjs); ///passing into enemy manager to check enemies
