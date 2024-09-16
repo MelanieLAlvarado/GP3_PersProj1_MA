@@ -10,7 +10,7 @@ public class NoiseManager : MonoBehaviour
     [SerializeField] private List<GameObject> noiseObjsInScene = new List<GameObject>();
     [SerializeField] private List<GameObject> activeNoiseObjs = new List<GameObject>();
 
-    public void AddNoiseSource(GameObject objToAdd)
+    public void AddNoiseSourceInScene(GameObject objToAdd)
     {
         noiseObjsInScene.Add(objToAdd);
     }
@@ -18,11 +18,11 @@ public class NoiseManager : MonoBehaviour
     {
         if (activeNoiseObjs.Find(x => x.ToString() == objToAdd.ToString()))
         {
-            return;//is in list already
+            return;///is in list already. no duplicates allowed
         }
         activeNoiseObjs.Add(objToAdd);
     }
-    public void ClearActiveNoiseSources() 
+    public void ClearActiveNoiseSources() ///noises are done
     {
         activeNoiseObjs.Clear();
     }
@@ -30,7 +30,7 @@ public class NoiseManager : MonoBehaviour
     {
         StartCoroutine(GatherEnemyManagerDelay());
     }
-    private IEnumerator GatherEnemyManagerDelay()
+    private IEnumerator GatherEnemyManagerDelay() ///delay until enemy manager exists
     {
         yield return new WaitForSeconds(0.25f);
         _enemyManager = GameManager.m_Instance.GetEnemyManager();
@@ -41,7 +41,7 @@ public class NoiseManager : MonoBehaviour
         yield return new WaitForEndOfFrame();
     }
 
-    public void CheckNearbyHearingObjects() 
+    public void CheckNearbyHearingObjects() ///passes activeNoise objects into hearing components
     {
         if (GameManager.m_Instance.GetPlayer())
         {
@@ -49,12 +49,11 @@ public class NoiseManager : MonoBehaviour
         }
         if (_playerRef.GetComponent<HearingComponent>()) 
         {
-            Debug.Log("PLAYER HAS A HEARING COMPONENT");
             _playerRef.GetComponent<HearingComponent>().CheckHearingRange(activeNoiseObjs);
         }
-        _enemyManager.CheckEnemiesHearingRanges(activeNoiseObjs);
+        _enemyManager.CheckEnemiesHearingRanges(activeNoiseObjs); ///passing into enemy manager to check enemies
     }
-    public void RemoveNoise(GameObject objToRemove)
+    public void RemoveActiveNoise(GameObject objToRemove)
     {
         activeNoiseObjs.Remove(objToRemove);
     }

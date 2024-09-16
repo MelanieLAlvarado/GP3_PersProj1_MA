@@ -9,7 +9,7 @@ public class NoiseComponent : MonoBehaviour
     private GameObject _ownerObject;
     private bool _canMakeNoise = false;
 
-    public bool GetCanMakeNoise() //use later to make cooldown's for noise objects
+    public bool GetCanMakeNoise() ///for allowing noise to be made and turned on once noiseManager is found
     {
         return _canMakeNoise;
     }
@@ -19,12 +19,12 @@ public class NoiseComponent : MonoBehaviour
     }
     private IEnumerator AddObjToNoiseManager() 
     {
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(0.5f);///delay while noisemanager spawns
         if (!_noiseManager)
         { 
             _noiseManager = GameManager.m_Instance.GetNoiseManager();
             _ownerObject = this.gameObject;
-            _noiseManager.AddNoiseSource(_ownerObject);
+            _noiseManager.AddNoiseSourceInScene(_ownerObject); ///adding owner to noisesInScene in noise manager
             _canMakeNoise = true;
             StopCoroutine(AddObjToNoiseManager());
         }
@@ -35,7 +35,7 @@ public class NoiseComponent : MonoBehaviour
     {
         _currentNoiseMultiplier = amountToSet;
     }
-    public float GetRawNoiseAmount() { return _rawNoiseAmount; }
+    public float GetRawNoiseAmount() { return _rawNoiseAmount; } ///calculated by 100 * noiseMultiplier
     public void TriggerNoise()
     {
         //Debug.Log($"{_ownerObject}'s Noise triggereed!");
@@ -46,8 +46,8 @@ public class NoiseComponent : MonoBehaviour
         }
         if (_noiseManager != null && _ownerObject != null)
         {
-            Debug.Log($"the gameobject is: {_ownerObject}");
-            _noiseManager.AddActiveNoiseSource(_ownerObject);
+            //Debug.Log($"the gameobject is: {_ownerObject}");
+            _noiseManager.AddActiveNoiseSource(_ownerObject); ///adding owner to activeNoises in noisemanager
             _noiseManager.CheckNearbyHearingObjects();
         }
     }

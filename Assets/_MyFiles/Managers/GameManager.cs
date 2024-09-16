@@ -7,23 +7,23 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager m_Instance;
 
-    [Header("Player Info")]
+    [Header("Player Info")]///for spawning player and UI
     [SerializeField] private GameObject playerPrefab;
     [SerializeField] private Transform playerSpawn;
     private GameObject _player;
     [SerializeField] private GameObject GameplayWidgetPrefab;
     private GameObject _GameplayWidget;
 
-    [Header("Manager Info [READ ONLY]")]
+    [Header("Manager Info [READ ONLY]")] ///able to see manager references
     [SerializeField] private NoiseManager noiseManager;
     [SerializeField] private EnemyManager enemyManager;
     [SerializeField] private UIManager uIManager;
 
-    [Header("Enemy Info")]
+    [Header("Enemy Info")]///for spawning Enemies (passed on to enemy Manager; May change later)
     [SerializeField] private GameObject enemyPrefab;
     [SerializeField] private Transform enemySpawnLoc;
 
-    [Header("Other Info/Options")]
+    [Header("Other Info/Options")] /// for visual (may remove or change)
     [SerializeField] private LayerMask visualMask;
     private void Awake()
     {
@@ -103,6 +103,7 @@ public class GameManager : MonoBehaviour
                 Destroy(enemyManager);
             }
         }
+        //Will change later
         UIManager[] uIManagerList = this.GetComponents<UIManager>();
         if (uIManagerList.Length > 0)
         {

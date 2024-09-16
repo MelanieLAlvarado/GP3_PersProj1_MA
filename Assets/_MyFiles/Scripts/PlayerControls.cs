@@ -7,11 +7,14 @@ using Vector3 = UnityEngine.Vector3;
 
 [RequireComponent(typeof(CharacterController))]
 [RequireComponent(typeof(PlayerInput))]
+
+///Components for project
 [RequireComponent(typeof(NoiseComponent))]
 [RequireComponent(typeof(HearingComponent))]
 [RequireComponent(typeof(TimerComponent))]
 public class PlayerControls : MonoBehaviour
 {
+    [Header("Player Enum Info [READ ONLY]")]
     [SerializeField] private EEntityType entityType = EEntityType.Player;
     [SerializeField] private EPlayerState playerState;
 
@@ -42,12 +45,12 @@ public class PlayerControls : MonoBehaviour
     [SerializeField] private float ySensitivity = 30f;
 
     [Header("Interaction info")]
-    [SerializeField] private GameObject targetInteractible;
-    [SerializeField] private bool isInteracting; //for seeing input in editor
-    [SerializeField] private bool isHiding;
-    private Vector3 _prevHidePos;
+    [SerializeField] private GameObject targetInteractible; ///interactible player has nearby
+    [SerializeField] private bool isInteracting; ///(for seeing input in editor)
+    [SerializeField] private bool isHiding;     ///(for seeing hiding bool in editor)
+    private Vector3 _prevHidePos;//Will be used to Lerp/Slerp player to before/after hiding
 
-    [Header("Noise Options")]
+    [Header("Noise Options")] ///Will be passed onto NoiseComponent
     [SerializeField][Range(0, 50)] private float hearingThreshold = 0.0f;
     private NoiseComponent _noiseComponent;
     private float _currentMultiplier;
@@ -60,7 +63,6 @@ public class PlayerControls : MonoBehaviour
     private TimerComponent _timerComponent;
     public EEntityType GetEntityType() { return entityType; }
     public EPlayerState GetPlayerState() { return playerState; }
-
     public GameObject GetTargetInteractible() { return targetInteractible; }
     public bool GetIsHiding() { return isHiding; }
     public Vector3 GetPrevHidePos() { return _prevHidePos; }
@@ -78,6 +80,7 @@ public class PlayerControls : MonoBehaviour
     }
     public void ToggleIsHiding()
     {
+        Debug.Log("toggle Hide!");
         isHiding = !isHiding;
         if (isHiding)
         {
@@ -92,6 +95,7 @@ public class PlayerControls : MonoBehaviour
     {
         _playerInputActions = new PlayerInputActions();
         _playerInputActions.Player.Enable();
+
         //programmatically add playerinputactions to actions list and connect unity events??
         _playerController = GetComponent<CharacterController>();
 
@@ -138,9 +142,10 @@ public class PlayerControls : MonoBehaviour
     }
     private void ProcessHide()
     {
-        //at this point, the targetinteractible should be the hiding interaction
+        ///at this point, the targetinteractible should be the hiding interaction
         if (isHiding && targetInteractible.GetComponent<HidingInteraction>())
         {
+            ///will change to lerp/slerp later.
             transform.position = targetInteractible.GetComponent<HidingInteraction>().GetHidePos().position;
         }
     }
@@ -209,13 +214,13 @@ public class PlayerControls : MonoBehaviour
     }
     private void ProcessNoise() 
     {
-        ProcessNoisesHeard();
-        ProcessNoiseType();
+        ProcessNoisesHeard(); ///checking if there's audio and updating UI
+        ProcessNoiseType(); ///checking type and setting current multiplier
         if (_noiseComponent.GetCanMakeNoise())
         {
-            Debug.Log("TRiggerNOSIel");
+            //Debug.Log("TRiggerNOSIel");
             _noiseComponent.TriggerNoise();
-        }    
+        }
         if (!_noiseComponent || _noiseComponent.GetNoiseMultiplier() == _currentMultiplier)
         {
             return;
@@ -291,7 +296,7 @@ public class PlayerControls : MonoBehaviour
         if (context.performed && targetInteractible) 
         {
             isInteracting = true;
-            targetInteractible.GetComponent<IInterActions>().OnInteraction();
+            targetInteractible.GetComponent<IInterActions>().OnInteraction();///Hiding or noisemakers interactible
         }
         if (context.canceled)
         {

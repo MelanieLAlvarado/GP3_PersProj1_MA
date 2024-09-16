@@ -153,6 +153,9 @@ GameObject:
   - component: {fileID: 6329497128120016208}
   - component: {fileID: 5577529953420082110}
   - component: {fileID: 7091170857019085975}
+  - component: {fileID: 2677653805796907057}
+  - component: {fileID: 7907126681620547041}
+  - component: {fileID: 955971924533794263}
   m_Layer: 7
   m_Name: Player
   m_TagString: Untagged
@@ -207,7 +210,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: f88b2e96d3d991541859bea87fb0077d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -278,10 +281,11 @@ MonoBehaviour:
   targetInteractible: {fileID: 0}
   isInteracting: 0
   isHiding: 0
+  hearingThreshold: 0
   idleMultiplier: 0
   sneakMultiplier: 0.2
   walkMultiplier: 0.4
-  sprintMultiplier: 0.7
+  sprintMultiplier: 0.8
 --- !u!143 &6329497128120016208
 CharacterController:
   m_ObjectHideFlags: 0
@@ -403,5 +407,55 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c8e5a1cbc76ae9d4f8ed4af56f8efd0e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!135 &2677653805796907057
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6049859577665911794}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.5
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &7907126681620547041
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6049859577665911794}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f36d4808ed688fa4a80455db7be75e02, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hearingRange: 30
+  hearingThreshold: 20
+  noiseObjsInRange: []
+  audibleNoiseList: []
+  noiseCalculatedValues: []
+--- !u!114 &955971924533794263
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6049859577665911794}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ea8b0c79a26bbb4dac76d8513db161b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

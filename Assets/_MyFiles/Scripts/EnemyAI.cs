@@ -10,10 +10,12 @@ public class EnemyAI : MonoBehaviour
     private NoiseManager _noiseManager;
     private HearingComponent _hearingComponent;
     private TimerComponent _waitTimer;
-    private TimerComponent _chaseTimer;
+    private TimerComponent _chaseTimer; //will be added to continue chasing the player for a short time after lost
     [SerializeField] EEnemyState enemyState;
+    [Range(0f, 10f)][SerializeField] private float additionalChaseTime = 2f; //will be used to change chase timer max val
+
+    [Header("Roam/WaitTime Options")]
     [Range(0f, 10f)][SerializeField] private float waitTime = 1.5f;
-    [Range(0f, 10f)][SerializeField] private float additionalChaseTime = 2f;
     [Range(1.0f, 30.0f)][SerializeField] float roamingRange = 20f;
 
     [Header("Manager Info [Read Only]")]
@@ -21,15 +23,15 @@ public class EnemyAI : MonoBehaviour
 
     [Header("Position Info [Read Only]")]
     [SerializeField] GameObject playerRef;
-    [SerializeField] private Transform tempCallPos;
-    [SerializeField] private Transform targetPos;
+    [SerializeField] private Transform tempCallPos; ///temp pos used for roaming
+    [SerializeField] private Transform targetPos; ///position that holds other positions
 
     [Header("Speed Options")]
     private NavMeshAgent _enemy_NavMeshAgent;
     private Vector3 _prevPosition;
-    [SerializeField] private float currentSpeed; //might use??
+    [SerializeField] private float currentSpeed; //might make changeable later
 
-    ///Might move to its own script... Hearing Component
+    ///Might move to its own script... Vision Component
 
     [Header("Field of View Options")]
     [SerializeField] private float visualRadius;
@@ -40,22 +42,22 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] [Range(0, 30)] private float playerLostCooldown;
     [SerializeField] private bool canSeePlayer;
 
-    private bool _isPlayerLostCoolDown; //This is a cooldown after the player left FOV
+    //private bool _isPlayerLostCoolDown; //might removed
 
-    //may add a timer to follow, even after player leaves visual field...
-    //and a way for the enemy to face the player when lost.
+    //  may add a timer to follow, even after player leaves visual field...
+    //  and a way for the enemy to face the player when lost.
 
 
     public float GetVisualRadius() { return visualRadius; }
     public float GetVisualAngle() { return visualAngle; }
-    public bool GetCanSeePlayer() { return FieldOfViewCheck(); }
+    public bool GetIsPlayerInFOV() { return FieldOfViewCheck(); }
 
     public Transform GetTargetPos() { return targetPos; }
     private void Start()
     {
         StartCoroutine(FindPlayerRef());
 
-        tempCallPos = new GameObject("TempPos").transform;
+        tempCallPos = new GameObject("TempPos").transform; //for roaming. target may be set to this
         tempCallPos.position = transform.position;
 
         _prevPosition = transform.position;
@@ -68,6 +70,7 @@ public class EnemyAI : MonoBehaviour
         _waitTimer.SetTimerMax(waitTime);
         _waitTimer.ResetTimer();
     
+        ///ChaseTimer is not done. but will allow the enemy to keep chasing player for a short time after lost
         _chaseTimer = gameObject.AddComponent<TimerComponent>();
         
         _chaseTimer.SetTimerMax(additionalChaseTime);
@@ -77,15 +80,24 @@ public class EnemyAI : MonoBehaviour
     }
     private void Update()
     {
-        ///separate second part into a separate piece... (will determine if enemy chases player or not while hiding)
-        ///
-
+        ProcessEnemyAI(); 
+    }
+    private IEnumerator FindPlayerRef()
+    {
+        yield return new WaitForSeconds(0.5f);
+        if (!playerRef && GameManager.m_Instance.GetPlayer() != null)
+        {
+            playerRef = GameManager.m_Instance.GetPlayer();
+            StopCoroutine(FindPlayerRef());
+        }
+    }
+    private void ProcessEnemyAI() ///checks conditions and sets enemy state
+    {
         if (enemyState == EEnemyState.wait && !_waitTimer.IsTimerFinished())
         {
-            ///Waiting based on timer component
+            ///Waiting based on timer component (waitTimer)
             return;
         }
-
         //timer for when player is lost?
         if (FieldOfViewCheck())
         {
@@ -101,16 +113,7 @@ public class EnemyAI : MonoBehaviour
             SetEnemyState(EEnemyState.roam);
         }
     }
-    private IEnumerator FindPlayerRef()
-    {
-        yield return new WaitForSeconds(0.5f);
-        if (!playerRef && GameManager.m_Instance.GetPlayer() != null)
-        {
-            playerRef = GameManager.m_Instance.GetPlayer();
-            StopCoroutine(FindPlayerRef());
-        }
-    }
-    private void SetEnemyState(EEnemyState stateToSet)
+    private void SetEnemyState(EEnemyState stateToSet) ///determines enemy action
     {
         enemyState = stateToSet;
         switch (enemyState)
@@ -124,7 +127,7 @@ public class EnemyAI : MonoBehaviour
                 //_waitTimer.SetRunTimer(true);
                 break;
             case EEnemyState.roam:
-                Roam(); //Add wait functionality
+                Roam(); ///Add wait functionality
                 GoToTarget();
                 break;
             case EEnemyState.curious:
@@ -151,7 +154,7 @@ public class EnemyAI : MonoBehaviour
                 }
                 ChasePlayer();
                 GoToTarget();
-                PullPlayerFromHidingPlace();
+                PullPlayerFromHidingPlace(); //<--(WIP)
                 break;
         }
     }
@@ -182,17 +185,17 @@ public class EnemyAI : MonoBehaviour
             {
                 if (canSeePlayer && PlayerHiddenCheck())
                 { 
-                    PullPlayerFromHidingPlace();//<-- still needs to be programmed
+                    PullPlayerFromHidingPlace();//<-- still needs to be programmed (WIP)
                 }
-                if (!PlayerHiddenCheck())
+                else if (!PlayerHiddenCheck())
                 {
-                    //end player here!!
+                    //get player here!! (WIP)
                 }
             }
         }
         else 
         {
-            targetPos = tempCallPos;
+            targetPos = tempCallPos; ///Playerlost. returns to roaming after waiting
             SetEnemyState(EEnemyState.wait);
         }
     }
@@ -228,7 +231,7 @@ public class EnemyAI : MonoBehaviour
         canSeePlayer = false;
         return false; /// There's nothing in the sphere as a visual target mask or in the angle of the FOV
     }
-    private bool PlayerHiddenCheck()
+    private bool PlayerHiddenCheck() ///Shorthand way of checking if player is hidden
     {
         EPlayerState tempPlayerState = playerRef.GetComponent<PlayerControls>().GetPlayerState();
         if (tempPlayerState == EPlayerState.hiding) 
@@ -243,15 +246,15 @@ public class EnemyAI : MonoBehaviour
         }
         return false;
     }
-    private void PullPlayerFromHidingPlace()
+    private void PullPlayerFromHidingPlace() ///(WIP)
     {
-        //will include chasing the player for a short time after leaving the visual field
-        //  and will include a way to decide to pull player out of hiding spots if the player
+        //include a way to decide to pull player out of hiding spots if the player
         //  was seen as they hid. 
     }
-    private void InvestigateNoise() 
+    private void InvestigateNoise()
     {
         Debug.Log("Investigating noise...");
+        ///TargetPos is determined by hearing component.
         _enemy_NavMeshAgent.destination = targetPos.transform.position;
         if (IsTargetAtStoppingDistance()) 
         {
@@ -260,7 +263,7 @@ public class EnemyAI : MonoBehaviour
             SetEnemyState(EEnemyState.wait);
         }
     }
-    private void Roam() 
+    private void Roam() ///Gets a random transform position and saves it on tempCallPos which is set to TargetPos
     {
         if (targetPos != null)
         {
@@ -269,24 +272,25 @@ public class EnemyAI : MonoBehaviour
             if (IsTargetAtStoppingDistance())
             {
                 Vector3 point;
-                if (RandomPoint(transform.position, roamingRange, out point))
+                if (RandomPoint(transform.position, roamingRange, out point)) ///Gets random point
                 {
                     Debug.DrawRay(point, Vector3.up, Color.blue, 1.0f);
 
                     targetPos.position = new Vector3(point.x, transform.position.y, point.z);
+                    ///Sets targetPos to the point x and y but the enemy's y position (might change)
                 }
             }
             _enemy_NavMeshAgent.destination = targetPos.transform.position;
         }
         else
         {
-            targetPos = tempCallPos;
+            targetPos = tempCallPos; ///if the targetPos is null it is set to the tempCallPos
             _enemy_NavMeshAgent.destination = targetPos.transform.position;
         }
     }
 
     private bool RandomPoint(Vector3 center, float range, out Vector3 result) 
-    {
+    {///Gets Random point in roamrange that is on the navmesh
         Vector3 randomPoint = center + Random.insideUnitSphere * range;
         NavMeshHit hit;
         if (NavMesh.SamplePosition(randomPoint, out hit, 1.0f, NavMesh.AllAreas))
@@ -298,4 +302,4 @@ public class EnemyAI : MonoBehaviour
         return false;
     }
 }
-public enum EEnemyState { wait, roam, curious, chase}
+public enum EEnemyState { wait, roam, curious, chase} ///Enemy action state

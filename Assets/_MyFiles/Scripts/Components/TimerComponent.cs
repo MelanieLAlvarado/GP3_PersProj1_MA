@@ -8,20 +8,20 @@ public class TimerComponent : MonoBehaviour
 
     public void SetTimerMax(float valToSet) { _timerMax = valToSet; }
     public void ResetTimer() { _timerValue = _timerMax; }
-    public void SetRunTimer(bool timerToSet) { _runTimer = timerToSet; }
-    public bool IsTimerFinished() //boolean to say if the timer is finished
+    //public void SetRunTimer(bool timerToSet) { _runTimer = timerToSet; }
+    public bool IsTimerFinished() ///boolean to say if the timer is finished
     {
-        if (_timerValue <= 0) //Set run timer to true when player leaves enemy sight so linger chase.
+        if (_timerValue <= 0) 
         {
-            //_runTimer = false; //debug this
+            ///_runTimer = false; //debug this later
             Debug.Log($"{this.gameObject.name}'s Timer is finished!!!");
             return true;
         }
         _timerValue -= Time.deltaTime;
         return false;
     }
-    public bool IsTimerRunning()
+    /*public bool IsTimerRunning() ///
     {
         return !IsTimerFinished() && !_runTimer;
-    }
+    }*/
 }
