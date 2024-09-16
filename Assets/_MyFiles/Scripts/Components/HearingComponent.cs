@@ -22,7 +22,7 @@ public class HearingComponent : MonoBehaviour
     public bool GetAreNoisesInaudible() { return _areNoisesInaudible; }
     public List<GameObject> GetNoisesObjsInRangeList() { return noiseObjsInRange; }
     public List<float> GetNoiseCalculatedValues() { return noiseCalculatedValues; }
-    public bool GetIsAudibleNoisesPresent() 
+    public bool GetIsAudibleNoisesPresent() ///usually starts the hearing process in other scripts
     {
         return audibleNoiseList.Count > 0; 
     }
@@ -38,15 +38,15 @@ public class HearingComponent : MonoBehaviour
     {
         for (int j = 0; j < listToCheck.Count; j++)
         {
-            Debug.Log("OBJECT CHECK");
+            //Debug.Log("OBJECT CHECK");
             if (noiseObjsInRange.Find(x => x.ToString() == listToCheck[j].ToString()))
             {
-                Debug.Log("Is Valid!!!               [TEST]");
+                //Debug.Log("Is Valid!!!               [TEST]");
                 AddToAudibleNoiseList(listToCheck[j]);
             }
         }
     }
-    public void UpdateNoiseMeter() //used by player. may move later
+    public void UpdateNoiseMeter() ///used by player. may move later
     {
         _uIManager = GameManager.m_Instance.GetUIManager();
         _uIManager.UpdateNoiseMeterUI(targetNoiseCalculatedValue);
@@ -62,7 +62,7 @@ public class HearingComponent : MonoBehaviour
         Debug.Log("added layer");
         colliderRange.excludeLayers += visualMask;
 
-        if (this.gameObject.GetComponent<EnemyAI>())
+        if (this.gameObject.GetComponent<EnemyAI>()) 
         {
             Rigidbody rigidBody = GetComponent<Rigidbody>();
             rigidBody.useGravity = false;
@@ -89,24 +89,21 @@ public class HearingComponent : MonoBehaviour
         else
         {
             Debug.Log("Noise is inaudible! wasn't added to list.");
-            _noiseManager.RemoveNoise(noiseToAdd);
+            _noiseManager.RemoveActiveNoise(noiseToAdd);
         }
     }
-    private float CalculateSingleNoiseValue(GameObject objToReceive) 
+    private float CalculateSingleNoiseValue(GameObject objToReceive)
     {
         float iDistance = Vector3.Distance(transform.position, objToReceive.transform.position);
 
-        float distMultiplier = 1 - (iDistance / hearingRange);
+        float distMultiplier = 1 - (iDistance / hearingRange); ///multiplier based on distance in range
 
         NoiseComponent noiseComp = objToReceive.GetComponent<NoiseComponent>();
-        if (objToReceive == GameManager.m_Instance.GetPlayer())
-        {
-            Debug.Log("PLayer noise val is:{{{" + noiseComp.GetRawNoiseAmount() * distMultiplier);
-        }
+
         return noiseComp.GetRawNoiseAmount() * distMultiplier;
     }
 
-    private void CalculateNoiseValues()
+    private void CalculateNoiseValues() ///saving each noise value
     {
         if (audibleNoiseList.Count > 0)
         {
@@ -119,7 +116,7 @@ public class HearingComponent : MonoBehaviour
     }
     public Transform ChooseNoiseTarget()
     {
-        //iterates through the list to find the highest noise value
+        ///iterates through the list to find the highest noise value
         CalculateNoiseValues();
         int index = 0;
         float noiseNum = noiseCalculatedValues[index];
@@ -148,7 +145,7 @@ public class HearingComponent : MonoBehaviour
         _areNoisesInaudible = true;
         return null;
     }
-    public void ClearAudibleLists() 
+    public void ClearAudibleLists() ///reseting the sounds heard
     {
         audibleNoiseList.Clear();
         noiseCalculatedValues.Clear();
@@ -162,7 +159,6 @@ public class HearingComponent : MonoBehaviour
             noiseObjsInRange.Add(other.gameObject);
         }
     }
-    //.Find(x => x.ToString() == triggeredNoiseObjs[j].ToString())
     private void OnTriggerExit(Collider other)
     {
         ///for when hearing range leaves a hearable object

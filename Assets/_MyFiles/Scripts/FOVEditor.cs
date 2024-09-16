@@ -6,7 +6,7 @@ using System.Collections.Generic;
 #if UNITY_EDITOR
 
 [CustomEditor(typeof(EnemyAI))]
-public class FOVEditor : Editor
+public class FOVEditor : Editor ///For visual of FOV in editor
 {
     private void OnSceneGUI()
     {
@@ -21,7 +21,7 @@ public class FOVEditor : Editor
         Handles.DrawLine(fov.transform.position, fov.transform.position + viewAngle01 * fov.GetVisualRadius());
         Handles.DrawLine(fov.transform.position, fov.transform.position + viewAngle02 * fov.GetVisualRadius());
 
-        if (fov.GetCanSeePlayer()) 
+        if (fov.GetIsPlayerInFOV()) 
         {
             Handles.color = Color.green;
             if (fov.GetTargetPos()) 

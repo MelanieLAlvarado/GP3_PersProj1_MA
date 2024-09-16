@@ -6,7 +6,7 @@ public class INoiseInteraction : MonoBehaviour, IInterActions
 {
     PlayerControls _player;
     NoiseComponent _noiseComponent;
-    [SerializeField] [Range(0, 1)] private float noiseMultiplier = 0.8f;
+    [SerializeField] [Range(0, 1)] private float noiseMultiplier = 0.8f; ///editable in inspector
     private void Start()
     {
         GetComponent<NoiseComponent>().SetNoiseMultiplier(noiseMultiplier);
@@ -23,7 +23,7 @@ public class INoiseInteraction : MonoBehaviour, IInterActions
     {
         if (_player)
         {
-            ///pinging enemy
+            ///calling enemy
             if (_noiseComponent = this.GetComponent<NoiseComponent>())
             {
                 Debug.Log("NOISE HERE");
@@ -36,7 +36,7 @@ public class INoiseInteraction : MonoBehaviour, IInterActions
         _player = other.GetComponent<PlayerControls>();
         if (_player && _player.GetEntityType() == EEntityType.Player)
         {
-            Debug.Log("near noisemaker");
+            //Debug.Log("near noisemaker");
             _player.SetTargetInteractible(this.gameObject);
         }
     }
