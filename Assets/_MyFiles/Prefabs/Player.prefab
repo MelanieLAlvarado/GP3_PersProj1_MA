@@ -156,6 +156,7 @@ GameObject:
   - component: {fileID: 2677653805796907057}
   - component: {fileID: 7907126681620547041}
   - component: {fileID: 955971924533794263}
+  - component: {fileID: 288579264692219877}
   m_Layer: 7
   m_Name: Player
   m_TagString: Untagged
@@ -409,6 +410,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c8e5a1cbc76ae9d4f8ed4af56f8efd0e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentNoiseMultiplier: 0
+  triggerTimerValue: 0
+  isTriggerTimer: 0
 --- !u!135 &2677653805796907057
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -442,9 +446,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f36d4808ed688fa4a80455db7be75e02, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  bDrawDebug: 1
   hearingRange: 30
   hearingThreshold: 20
-  noiseObjsInRange: []
   audibleNoiseList: []
   noiseCalculatedValues: []
 --- !u!114 &955971924533794263
@@ -457,5 +461,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6ea8b0c79a26bbb4dac76d8513db161b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &288579264692219877
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6049859577665911794}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3dd88427d7008c14597b9bd0a7cb4647, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

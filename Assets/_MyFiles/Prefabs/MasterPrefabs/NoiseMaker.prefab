@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 3046540912253562700}
   - component: {fileID: 9188888692909521178}
   - component: {fileID: 5302807220450348652}
+  - component: {fileID: 6810466850208804044}
   m_Layer: 0
   m_Name: NoiseMaker
   m_TagString: Untagged
@@ -122,7 +123,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 36893da4bf4a3984497b227f85a8f173, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  noiseMultiplier: 1
   detectionRange: 2
 --- !u!114 &5302807220450348652
 MonoBehaviour:
@@ -134,5 +134,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c8e5a1cbc76ae9d4f8ed4af56f8efd0e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentNoiseMultiplier: 1
+  triggerTimerValue: 1
+  isTriggerTimer: 1
+--- !u!114 &6810466850208804044
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2571654918593413409}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3dd88427d7008c14597b9bd0a7cb4647, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

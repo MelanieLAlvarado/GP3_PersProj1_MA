@@ -1,17 +1,21 @@
 using System.Collections;
 using UnityEngine;
 
+[RequireComponent(typeof(Stimuli))]
 public class NoiseComponent : MonoBehaviour
 {
     private NoiseManager _noiseManager;
     private float _rawNoiseAmount;
-    private float _currentNoiseMultiplier;
+    [SerializeField][Range(0, 1)] private float currentNoiseMultiplier;
+    [SerializeField][Range(0, 10)] private float triggerTimerValue = 1.0f;
+    [SerializeField] private bool bIsTriggerTimer = false;
     private GameObject _ownerObject;
-    private bool _canMakeNoise = false;
+    private bool _bCanMakeNoise = false;
+    private bool _bIsTriggered = false;
 
     public bool GetCanMakeNoise() ///for allowing noise to be made and turned on once noiseManager is found
     {
-        return _canMakeNoise;
+        return _bCanMakeNoise;
     }
     private void Awake()
     {
@@ -25,30 +29,46 @@ public class NoiseComponent : MonoBehaviour
             _noiseManager = GameManager.m_Instance.GetNoiseManager();
             _ownerObject = this.gameObject;
             _noiseManager.AddNoiseSourceInScene(_ownerObject); ///adding owner to noisesInScene in noise manager
-            _canMakeNoise = true;
+            _bCanMakeNoise = true;
             StopCoroutine(AddObjToNoiseManager());
         }
         yield return new WaitForEndOfFrame();
     }
-    public float GetNoiseMultiplier()  { return _currentNoiseMultiplier; }
+    public bool GetIsTriggered() { return _bIsTriggered; }
+    public float GetNoiseMultiplier()  { return currentNoiseMultiplier; }
     public void SetNoiseMultiplier(float amountToSet)
     {
-        _currentNoiseMultiplier = amountToSet;
+        currentNoiseMultiplier = amountToSet;
     }
     public float GetRawNoiseAmount() { return _rawNoiseAmount; } ///calculated by 100 * noiseMultiplier
     public void TriggerNoise()
     {
         //Debug.Log($"{_ownerObject}'s Noise triggereed!");
-        _rawNoiseAmount = 100 * _currentNoiseMultiplier;
-        if (!_noiseManager)
+        _bIsTriggered = true;
+        _rawNoiseAmount = 100 * currentNoiseMultiplier;
+        if (bIsTriggerTimer)
+        {
+            StartCoroutine(TriggerTimer());
+        }
+        /*if (!_noiseManager)
         {
             _noiseManager = GameManager.m_Instance.GetNoiseManager();
         }
         if (_noiseManager != null && _ownerObject != null)
         {
             //Debug.Log($"the gameobject is: {_ownerObject}");
-            _noiseManager.AddActiveNoiseSource(_ownerObject); ///adding owner to activeNoises in noisemanager
-            _noiseManager.CheckNearbyHearingObjects();
-        }
+
+
+            //Should be removed once stimuli/sense are working
+            //_noiseManager.AddActiveNoiseSource(_ownerObject); ///adding owner to activeNoises in noisemanager
+            //_noiseManager.CheckNearbyHearingObjects();
+        }*/
     }
+    private IEnumerator TriggerTimer() 
+    {
+        yield return new WaitForSeconds(triggerTimerValue);
+        _bIsTriggered = false;
+        StopCoroutine(TriggerTimer());
+    }
+    
 }

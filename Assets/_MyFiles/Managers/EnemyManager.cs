@@ -36,14 +36,14 @@ public class EnemyManager : MonoBehaviour
             _enemies.Add(enemy);
         }
     }
-    public void CheckEnemiesHearingRanges(List<GameObject> triggeredNoiseObjs)
+    /*public void CheckEnemiesHearingRanges(List<GameObject> triggeredNoiseObjs)
     {
         ///Checking every enemy in manager
         for (int i = 0; i < _enemies.Count; i++) ///<-- checking each enemy and passing the triggered objs in
         {
             HearingComponent enemyHearingComp = _enemies[i].GetComponent<HearingComponent>();
             ///Checking every object from parameters
-            enemyHearingComp.CheckHearingRange(triggeredNoiseObjs);
+            //enemyHearingComp.CheckHearingRange(triggeredNoiseObjs);
         }
-    }
+    }*/
 }

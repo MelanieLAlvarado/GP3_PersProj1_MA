@@ -7,7 +7,6 @@ using UnityEngine.AI;
 [RequireComponent(typeof(TimerComponent))]
 public class EnemyAI : MonoBehaviour
 {
-    private NoiseManager _noiseManager;
     private HearingComponent _hearingComponent;
     private TimerComponent _waitTimer;
     private TimerComponent _chaseTimer; //will be added to continue chasing the player for a short time after lost
@@ -40,7 +39,7 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] private LayerMask visualTargetMask;
     [SerializeField] private LayerMask obstructionMask;
     [SerializeField] [Range(0, 30)] private float playerLostCooldown;
-    [SerializeField] private bool canSeePlayer;
+    [SerializeField] private bool bCanSeePlayer;
 
     //private bool _isPlayerLostCoolDown; //might removed
 
@@ -63,7 +62,6 @@ public class EnemyAI : MonoBehaviour
         _prevPosition = transform.position;
         _enemy_NavMeshAgent = GetComponent<NavMeshAgent>();
 
-        _noiseManager = GameManager.m_Instance.GetComponent<NoiseManager>();
         _hearingComponent = GetComponent<HearingComponent>();
         
         _waitTimer = GetComponents<TimerComponent>()[0];
@@ -182,7 +180,7 @@ public class EnemyAI : MonoBehaviour
             _enemy_NavMeshAgent.destination = targetPos.transform.position;
             if (IsTargetAtStoppingDistance())
             {
-                if (canSeePlayer && PlayerHiddenCheck())
+                if (bCanSeePlayer && PlayerHiddenCheck())
                 { 
                     PullPlayerFromHidingPlace();//<-- still needs to be programmed (WIP)
                 }
@@ -216,19 +214,19 @@ public class EnemyAI : MonoBehaviour
                     targetPos = visualTarget;
                     if (!PlayerHiddenCheck())
                     {
-                        canSeePlayer = true;
+                        bCanSeePlayer = true;
                     }
-                    if (canSeePlayer == false)
+                    if (bCanSeePlayer == false)
                     {
                         return false; ///player hid before coming inside FOV
                     }
                     return true; ///if the visual target within the angle, range, and not obtructed: then chase
                 }
-                canSeePlayer = false;
+                bCanSeePlayer = false;
                 return false; /// The visual target is not within the angle of the FOV
             }
         }
-        canSeePlayer = false;
+        bCanSeePlayer = false;
         return false; /// There's nothing in the sphere as a visual target mask or in the angle of the FOV
     }
     private bool PlayerHiddenCheck() ///Shorthand way of checking if player is hidden
@@ -252,7 +250,6 @@ public class EnemyAI : MonoBehaviour
         _enemy_NavMeshAgent.destination = targetPos.transform.position;
         if (IsTargetAtStoppingDistance()) 
         {
-            _noiseManager.ClearActiveNoiseSources();//May change
             _hearingComponent.ClearAudibleLists();
             SetEnemyState(EEnemyState.wait);
         }

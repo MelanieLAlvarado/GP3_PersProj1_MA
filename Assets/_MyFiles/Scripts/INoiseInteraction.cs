@@ -6,7 +6,6 @@ public class INoiseInteraction : MonoBehaviour, IInterActions
 {
     PlayerControls _player;
     NoiseComponent _noiseComponent;
-    [SerializeField] [Range(0, 1)] private float noiseMultiplier = 0.8f; ///editable in inspector
     [SerializeField][Range(0, 5)] private float detectionRange = 2f; ///Edit sphere collider size on start
 
     private void Start()
@@ -14,7 +13,6 @@ public class INoiseInteraction : MonoBehaviour, IInterActions
         SphereCollider detectionCollider = gameObject.AddComponent<SphereCollider>();
         detectionCollider.isTrigger = true;
         detectionCollider.radius = detectionRange;
-        GetComponent<NoiseComponent>().SetNoiseMultiplier(noiseMultiplier);
     }
     public EEntityType GetEntityType()
     {

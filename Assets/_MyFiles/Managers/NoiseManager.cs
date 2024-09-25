@@ -49,9 +49,9 @@ public class NoiseManager : MonoBehaviour
         }
         if (_playerRef.GetComponent<HearingComponent>()) 
         {
-            _playerRef.GetComponent<HearingComponent>().CheckHearingRange(activeNoiseObjs);
+            //_playerRef.GetComponent<HearingComponent>().CheckHearingRange(activeNoiseObjs);
         }
-        _enemyManager.CheckEnemiesHearingRanges(activeNoiseObjs); ///passing into enemy manager to check enemies
+        //_enemyManager.CheckEnemiesHearingRanges(activeNoiseObjs); ///passing into enemy manager to check enemies
     }
     public void RemoveActiveNoise(GameObject objToRemove)
     {

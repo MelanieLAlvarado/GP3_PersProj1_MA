@@ -1,7 +1,7 @@
 using UnityEngine;
 
 public class TimerComponent : MonoBehaviour
-{
+{//will likely remove script all together...
     private float _timerValue = 0;
     private float _timerMax;
     private bool _runTimer = false;

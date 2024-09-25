@@ -24,18 +24,18 @@ public class PlayerControls : MonoBehaviour
     [Header("Movement")]
     [SerializeField] private float standingHeight;
     [SerializeField] private float sneakHeight;
-    private bool _isSneaking;
+    private bool _bIsSneaking;
 
     [SerializeField][Range(1.0f, 6.0f)] private float sneakSpeed = 2f;
     [SerializeField][Range(1.0f, 8.0f)] private float walkSpeed = 6f;
     [SerializeField][Range(1.0f, 10.0f)] private float sprintSpeed = 8f;
-    private bool _isSprinting;
+    private bool _bIsSprinting;
     [SerializeField] private float speed = 5f;
     private Vector3 _playerVelocity;
 
-    private bool _isGrounded;
+    private bool _bIsGrounded;
     private float _gravity = -9.8f;
-    private bool _defaultMovement = true;
+    private bool _bIsDefaultMovement = true;
 
     [Header("Camera Options")]
     [SerializeField] private Camera playerCam;
@@ -105,8 +105,8 @@ public class PlayerControls : MonoBehaviour
 
         _timerComponent.SetTimerMax(1.0f);
 
-        _isSneaking = false;
-        _isSprinting = false;
+        _bIsSneaking = false;
+        _bIsSprinting = false;
         speed = walkSpeed;
 
         playerState = EPlayerState.walking;
@@ -133,7 +133,7 @@ public class PlayerControls : MonoBehaviour
 
     private void Update()
     {
-        _isGrounded = _playerController.isGrounded;
+        _bIsGrounded = _playerController.isGrounded;
     }
 
     private void LateUpdate()
@@ -151,16 +151,16 @@ public class PlayerControls : MonoBehaviour
     }
     private void ProcessMovement()
     {
-        if (_defaultMovement == true && !isHiding)
+        if (_bIsDefaultMovement == true && !isHiding)
         {
             Vector2 inputVector = _playerInputActions.Player.Move.ReadValue<Vector2>();
-            if (!_isSprinting)
+            if (!_bIsSprinting)
             {
                 if (inputVector.x == 0 && inputVector.y == 0)
                 {
                     playerState = EPlayerState.idle;
                 }
-                else if (_isSneaking) 
+                else if (_bIsSneaking) 
                 {
                     playerState = EPlayerState.sneaking;
                 }
@@ -173,7 +173,7 @@ public class PlayerControls : MonoBehaviour
             _playerController.Move(transform.TransformDirection(movementDirection) * (speed * Time.deltaTime));
 
             _playerVelocity.y += Time.deltaTime * _gravity;
-            if (_isGrounded && _playerVelocity.y < 0)
+            if (_bIsGrounded && _playerVelocity.y < 0)
             {
                 _playerVelocity.y = -2f;
             }
@@ -185,7 +185,7 @@ public class PlayerControls : MonoBehaviour
     private void ProcessSneak()
     {
         float heightChange;
-        if (_isSneaking == true && !isHiding)
+        if (_bIsSneaking == true && !isHiding)
         {
             heightChange = sneakHeight;
         }
@@ -260,16 +260,16 @@ public class PlayerControls : MonoBehaviour
     }
     public void Sprint(InputAction.CallbackContext context)
     {
-        if (context.performed && _isSneaking == false && playerState != EPlayerState.hiding)
+        if (context.performed && _bIsSneaking == false && playerState != EPlayerState.hiding)
         {
-            _isSprinting = true;
+            _bIsSprinting = true;
             playerState = EPlayerState.sprinting;
             speed = sprintSpeed;
         }
 
-        if (context.canceled && _isSneaking == false && playerState != EPlayerState.hiding)
+        if (context.canceled && _bIsSneaking == false && playerState != EPlayerState.hiding)
         {
-            _isSprinting = false;
+            _bIsSprinting = false;
             playerState = EPlayerState.walking;
             speed = walkSpeed;
         }
@@ -277,16 +277,16 @@ public class PlayerControls : MonoBehaviour
 
     public void Sneak(InputAction.CallbackContext context)
     {
-        if (context.performed && _isGrounded == true && playerState != EPlayerState.hiding)
+        if (context.performed && _bIsGrounded == true && playerState != EPlayerState.hiding)
         {
-            _isSneaking = true;
+            _bIsSneaking = true;
             playerState = EPlayerState.sneaking;
             speed = sneakSpeed;
         }
 
         if (context.canceled && playerState != EPlayerState.hiding)
         {
-            _isSneaking = false;
+            _bIsSneaking = false;
             playerState = EPlayerState.walking;
             speed = walkSpeed;
         }
