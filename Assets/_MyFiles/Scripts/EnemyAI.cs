@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
+[RequireComponent(typeof(VisionComponent))]
 [RequireComponent(typeof(HearingComponent))]
 [RequireComponent(typeof(TimerComponent))]
 public class EnemyAI : MonoBehaviour
 {
+    private VisionComponent _visionComponent;
     private HearingComponent _hearingComponent;
     private TimerComponent _waitTimer;
     private TimerComponent _chaseTimer; //will be added to continue chasing the player for a short time after lost
@@ -49,7 +51,7 @@ public class EnemyAI : MonoBehaviour
 
     public float GetVisualRadius() { return visualRadius; }
     public float GetVisualAngle() { return visualAngle; }
-    public bool GetIsPlayerInFOV() { return FieldOfViewCheck(); }
+    //public bool GetIsPlayerInFOV() { return FieldOfViewCheck(); }
 
     public Transform GetTargetPos() { return targetPos; }
     private void Start()
@@ -62,8 +64,10 @@ public class EnemyAI : MonoBehaviour
         _prevPosition = transform.position;
         _enemy_NavMeshAgent = GetComponent<NavMeshAgent>();
 
+        _visionComponent = GetComponent<VisionComponent>();
         _hearingComponent = GetComponent<HearingComponent>();
         
+        //Timer to be moved out
         _waitTimer = GetComponents<TimerComponent>()[0];
         _waitTimer.SetTimerMax(waitTime);
         _waitTimer.ResetTimer();

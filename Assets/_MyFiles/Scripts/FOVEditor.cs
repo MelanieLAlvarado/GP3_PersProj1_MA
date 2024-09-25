@@ -21,14 +21,14 @@ public class FOVEditor : Editor ///For visual of FOV in editor
         Handles.DrawLine(fov.transform.position, fov.transform.position + viewAngle01 * fov.GetVisualRadius());
         Handles.DrawLine(fov.transform.position, fov.transform.position + viewAngle02 * fov.GetVisualRadius());
 
-        if (fov.GetIsPlayerInFOV()) 
+        /*if (fov.GetIsPlayerInFOV()) 
         {
             Handles.color = Color.green;
             if (fov.GetTargetPos()) 
             {
                 Handles.DrawLine(fov.transform.position, fov.GetTargetPos().position);
             }
-        }
+        }*/
     }
     private Vector3 DirectionFromAngle(float eulerY, float angleInDegrees) 
     {
