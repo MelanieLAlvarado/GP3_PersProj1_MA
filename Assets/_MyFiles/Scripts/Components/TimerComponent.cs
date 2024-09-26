@@ -14,7 +14,7 @@ public class TimerComponent : MonoBehaviour
         if (_timerValue <= 0) 
         {
             ///_runTimer = false; //debug this later
-            Debug.Log($"{this.gameObject.name}'s Timer is finished!!!");
+            //Debug.Log($"{this.gameObject.name}'s Timer is finished!!!");
             return true;
         }
         _timerValue -= Time.deltaTime;

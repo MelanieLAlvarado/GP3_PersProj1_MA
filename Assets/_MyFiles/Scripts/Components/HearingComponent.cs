@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
@@ -13,9 +14,12 @@ public class HearingComponent : Sense
     private bool _bCanDetectSelf = false;//May be obsolete
 
     [Header("Hearing List Info [READ ONLY]")]
+    private Dictionary<Stimuli, float> _audibleNoiseDict = new Dictionary<Stimuli, float>();
+
     [SerializeField] private List<GameObject> audibleNoiseList = new List<GameObject>();
     [SerializeField] private List<float> noiseCalculatedValues = new List<float>();
     private float targetNoiseCalculatedValue = 0.0f;
+    private Transform _hearingTarget;
 
     public bool GetAreNoisesInaudible() { return _bAreNoisesInaudible; }
     public List<float> GetNoiseCalculatedValues() { return noiseCalculatedValues; }
@@ -82,7 +86,7 @@ public class HearingComponent : Sense
         foreach (Stimuli stimuli in GetCurrentSensibleStimuliSet())
         {
             AddToAudibleNoiseList(stimuli.gameObject);
-            Debug.Log(GetCurrentSensibleStimuliSet().Count);
+            UpdateAudibleStimuliDict(stimuli);
 
             /*NoiseComponent noise = stimuli.gameObject.GetComponent<NoiseComponent>();
             if (noise != null && !noise.GetIsTriggered())
@@ -91,23 +95,54 @@ public class HearingComponent : Sense
             }*/
         }
     }
+
+    private void UpdateAudibleStimuliDict(Stimuli stimuli)
+    {
+        float stimuliNoise = CalculateSingleNoiseValue(stimuli.gameObject);
+
+        if (stimuliNoise >= hearingThreshold)
+        {
+            //Debug.Log("Noise has been added...");
+
+            if (_audibleNoiseDict.ContainsKey(stimuli))
+            {
+                //Debug.Log("This obj is already in list!");
+                _audibleNoiseDict[stimuli] = stimuliNoise;
+                return;
+            }
+            NoiseComponent noiseComp = stimuli.gameObject.GetComponent<NoiseComponent>();
+            if (noiseComp.GetIsTriggered() == true)
+            {
+                _audibleNoiseDict.Add(stimuli, stimuliNoise);
+            }
+        } else
+        {
+            if (_audibleNoiseDict.ContainsKey(stimuli))
+            {
+                //Debug.Log("This obj is already in list!");
+                _audibleNoiseDict.Remove(stimuli); 
+                return;
+            }
+        }
+    }
+
     private void AddToAudibleNoiseList(GameObject noiseToAdd)
     {
         if (audibleNoiseList.Contains(noiseToAdd))
         {
-            Debug.Log("This obj is already in list!");
+            //Debug.Log("This obj is already in list!");
             return;
         }
         if (CalculateSingleNoiseValue(noiseToAdd) >= hearingThreshold)
         {
-            Debug.Log("Noise has been added...");
+            //Debug.Log("Noise has been added...");
 
             if (noiseToAdd.GetComponent<NoiseComponent>().GetIsTriggered() == true) 
             {
                 audibleNoiseList.Add(noiseToAdd);
             }
         }
-        Debug.Log("Noise is inaudible! wasn't added to list.");
+        //Debug.Log("Noise is inaudible! wasn't added to list.");
     }
     private float CalculateSingleNoiseValue(GameObject objToReceive)
     {
@@ -121,7 +156,7 @@ public class HearingComponent : Sense
     }
 
     private void CalculateNoiseValues() ///saving each noise value
-    {
+    {//might not use this after all?
         if (audibleNoiseList.Count > 0)
         {
             for (int i = 0; i < audibleNoiseList.Count; i++)
@@ -153,6 +188,7 @@ public class HearingComponent : Sense
 
         targetNoiseCalculatedValue = noiseCalculatedValues[index];
         noiseCalculatedValues.Clear();
+        _hearingTarget = targetPos;
         if (noiseNum > hearingThreshold)
         {
             _bAreNoisesInaudible = false;
@@ -182,10 +218,22 @@ public class HearingComponent : Sense
     {
         Gizmos.color = Color.cyan;
         Gizmos.DrawWireSphere(transform.position, hearingRange);
+        if (_hearingTarget)
+        {
+            if (targetNoiseCalculatedValue > hearingThreshold)
+            {
+                Debug.DrawRay(_hearingTarget.position, Vector3.up, UnityEngine.Color.magenta, 0.1f);
+            }
+            else
+            {
+                Debug.DrawRay(_hearingTarget.position, Vector3.up, UnityEngine.Color.yellow, 0.1f);
+            }
+        }
     }
 
     protected override bool IsStimuliSensible(Stimuli stimuli)
     {
-        return transform.InRangeOf(stimuli.transform, hearingRange);
+        float stimuliNoiseVal = CalculateSingleNoiseValue(stimuli.gameObject);
+        return transform.InRangeOf(stimuli.transform, hearingRange) && stimuliNoiseVal > hearingThreshold;
     }
 }

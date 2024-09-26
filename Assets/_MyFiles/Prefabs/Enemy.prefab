@@ -320,7 +320,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bDrawDebug: 1
-  forgetTime: 0
+  forgetTime: 4
   hearingRange: 30
   hearingThreshold: 30
   audibleNoiseList: []
@@ -341,7 +341,6 @@ MonoBehaviour:
   forgetTime: 2
   visualRadius: 15
   visualAngle: 120
-  visualTargetLostCooldown: 2
   bCanSeeVisualTarget: 0
 --- !u!114 &-9021636143937447779
 MonoBehaviour:
@@ -357,3 +356,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tempCallPosName: RoamPos
   roamingRange: 20
+  enableIndependentRoam: 0

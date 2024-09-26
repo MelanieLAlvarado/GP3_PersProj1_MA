@@ -94,11 +94,11 @@ public class EnemyAI : MonoBehaviour
     }
     private void ProcessEnemyAI() ///checks conditions and sets enemy state
     {
-        if (enemyState == EEnemyState.wait && !_waitTimer.IsTimerFinished())
+        /*if (enemyState == EEnemyState.wait && !_waitTimer.IsTimerFinished())
         {
             ///Waiting based on timer component (waitTimer)
             return;
-        }
+        }*/
         //timer for when player is lost?
         if (_visionComponent.GetCurrentSensibleStimuliSetIsntEmpty())
         {

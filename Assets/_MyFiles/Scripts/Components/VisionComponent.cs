@@ -1,3 +1,4 @@
+using System.Drawing;
 using UnityEngine;
 
 public class VisionComponent : Sense
@@ -6,33 +7,39 @@ public class VisionComponent : Sense
     [SerializeField] private float visualRadius;
     [Range(0, 360)][SerializeField] private float visualAngle;
 
-    [SerializeField][Range(0, 30)] private float visualTargetLostCooldown;
     [SerializeField] private bool bCanSeeVisualTarget;
+    private GameObject visualTarget = null;
 
     protected override bool IsStimuliSensible(Stimuli stimuli)
     {
         if (!transform.InRangeOf(stimuli.transform, visualRadius))
         {
             bCanSeeVisualTarget = false;
+            visualTarget = null;
             return false;
         }
         if (!transform.InAngleOf(stimuli.transform, visualAngle))
         {
             bCanSeeVisualTarget = false;
+            visualTarget = null;
             return false;
         }
         if (transform.IsBlockedTo(stimuli.transform, Vector3.up, visualRadius))
         {
             bCanSeeVisualTarget = false;
+            visualTarget = null;
             return false;
         }
         if (!stimuli.GetIsVisuallyDetectable())
         {
             bCanSeeVisualTarget = false;
+            visualTarget = null;
             return false;
         }
         Debug.Log($"CAN SEE {stimuli.gameObject.name}");
         bCanSeeVisualTarget = true; //Determine whether to chase here
+
+        visualTarget = stimuli.gameObject;
         return true;
     }
     /*private bool FieldOfViewCheck()
@@ -78,5 +85,9 @@ public class VisionComponent : Sense
 
         Gizmos.DrawLine(transform.position + Vector3.up, transform.position + Vector3.up + lineLeft * visualRadius);
         Gizmos.DrawLine(transform.position + Vector3.up, transform.position + Vector3.up + lineRight * visualRadius);
+        if (visualTarget)
+        {
+            Debug.DrawRay(visualTarget.transform.position, Vector3.up, UnityEngine.Color.red, 0.1f);
+        }
     }
 }

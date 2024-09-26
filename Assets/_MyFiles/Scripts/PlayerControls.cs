@@ -225,7 +225,6 @@ public class PlayerControls : MonoBehaviour
     {
         if (_hearingComponent && _hearingComponent.GetIsAudibleNoisesPresent())
         {///not using transform, but getting float values calculated for noisemeter
-            Debug.Log("player hears a noise!!!");
             _hearingComponent.ChooseNoiseTarget();
             _hearingComponent.UpdateNoiseMeter();
             if (_timerComponent.IsTimerFinished()) ///1.0f second wait time

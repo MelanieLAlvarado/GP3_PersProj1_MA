@@ -447,7 +447,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f36d4808ed688fa4a80455db7be75e02, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bDrawDebug: 1
+  bDrawDebug: 0
   forgetTime: 2
   hearingRange: 30
   hearingThreshold: 20

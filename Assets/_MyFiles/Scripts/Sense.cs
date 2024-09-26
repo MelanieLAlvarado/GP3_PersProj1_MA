@@ -4,8 +4,9 @@ using UnityEngine;
 
 public abstract class Sense : MonoBehaviour
 {
+    [Header("Sense Options")]
     [SerializeField] private bool bDrawDebug = true;
-    [SerializeField][Range(0, 10)] private float forgetTime = 2.0f;
+    [SerializeField][Range(0, 10)] private float forgetTime = 0.0f;
 
     private static HashSet<Stimuli> _registeredStimuliSet = new HashSet<Stimuli>();
     private HashSet<Stimuli> _currentSensibleStimuliSet = new HashSet<Stimuli>();
@@ -14,7 +15,7 @@ public abstract class Sense : MonoBehaviour
 
     public HashSet<Stimuli> GetCurrentSensibleStimuliSet() 
     {
-        Debug.Log($"current Sensible stim set count: {_currentSensibleStimuliSet.Count}");
+        //Debug.Log($"current Sensible stim set count: {_currentSensibleStimuliSet.Count}");
         return _currentSensibleStimuliSet; 
     }
     public bool GetCurrentSensibleStimuliSetIsntEmpty() { return _currentSensibleStimuliSet.Count > 0; }
@@ -33,10 +34,10 @@ public abstract class Sense : MonoBehaviour
 
     private void FixedUpdate()
     {
-        Debug.Log($"registered Stim: {_registeredStimuliSet.Count}");
+        //Debug.Log($"registered Stim: {_registeredStimuliSet.Count}");
         foreach (Stimuli stimuli in _registeredStimuliSet)
         {
-            Debug.Log($"{stimuli.gameObject.name} is sensible?: {IsStimuliSensible(stimuli)}");
+            //Debug.Log($"{stimuli.gameObject.name} is sensible?: {IsStimuliSensible(stimuli)}");
             if (IsStimuliSensible(stimuli))
             {
                 HandleSensibleStimuli(stimuli);
@@ -52,7 +53,7 @@ public abstract class Sense : MonoBehaviour
         if (_currentSensibleStimuliSet.Contains(stimuli)) { return; }
 
         _currentSensibleStimuliSet.Add(stimuli);
-        Debug.Log($" added stim: {stimuli.gameObject.name}");
+        //Debug.Log($" added stim: {stimuli.gameObject.name}");
 
         if (_forgettingCoroutines.ContainsKey(stimuli))
         {
