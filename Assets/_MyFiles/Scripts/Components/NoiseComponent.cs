@@ -10,14 +10,14 @@ public class NoiseComponent : MonoBehaviour
     [SerializeField][Range(0, 10)] private float triggerTimerValue = 1.0f;
     [SerializeField] private bool bIsTriggerTimer = false;
     private GameObject _ownerObject;
-    private bool _bCanMakeNoise = false;
+    //private bool _bCanMakeNoise = false;
     private bool _bIsTriggered = false;
 
-    public bool GetCanMakeNoise() ///for allowing noise to be made and turned on once noiseManager is found
+    /*public bool GetCanMakeNoise() ///for allowing noise to be made and turned on once noiseManager is found
     {
         return _bCanMakeNoise;
     }
-    private void Awake()
+    /*private void Awake()
     {
         StartCoroutine(AddObjToNoiseManager());
     }
@@ -33,8 +33,9 @@ public class NoiseComponent : MonoBehaviour
             StopCoroutine(AddObjToNoiseManager());
         }
         yield return new WaitForEndOfFrame();
-    }
+    }*/
     public bool GetIsTriggered() { return _bIsTriggered; }
+    public void SetIsTriggered(bool stateToSet) { _bIsTriggered = stateToSet; }
     public float GetNoiseMultiplier()  { return currentNoiseMultiplier; }
     public void SetNoiseMultiplier(float amountToSet)
     {

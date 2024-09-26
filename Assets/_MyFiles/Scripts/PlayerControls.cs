@@ -216,11 +216,7 @@ public class PlayerControls : MonoBehaviour
     {
         ProcessNoisesHeard(); ///checking if there's audio and updating UI
         ProcessNoiseType(); ///checking type and setting current multiplier
-        if (_noiseComponent.GetCanMakeNoise())
-        {
-            //Debug.Log("TRiggerNOSIel");
-            _noiseComponent.TriggerNoise();
-        }
+        _noiseComponent.TriggerNoise();
         if (!_noiseComponent || _noiseComponent.GetNoiseMultiplier() == _currentMultiplier)
         {
             return;

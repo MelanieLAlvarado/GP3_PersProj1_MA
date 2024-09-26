@@ -8,7 +8,7 @@ using System.Collections.Generic;
 [CustomEditor(typeof(EnemyAI))]
 public class FOVEditor : Editor ///For visual of FOV in editor
 {
-    private void OnSceneGUI()
+    /*private void OnSceneGUI()
     {
         EnemyAI fov = (EnemyAI)target;
         Handles.color = Color.white;
@@ -28,12 +28,12 @@ public class FOVEditor : Editor ///For visual of FOV in editor
             {
                 Handles.DrawLine(fov.transform.position, fov.GetTargetPos().position);
             }
-        }*/
+        }
     }
     private Vector3 DirectionFromAngle(float eulerY, float angleInDegrees) 
     {
         angleInDegrees += eulerY;
         return new Vector3(Mathf.Sin(angleInDegrees * Mathf.Deg2Rad), 0, Mathf.Cos(angleInDegrees * Mathf.Deg2Rad));
-    }
+    }*/
 }  
 #endif

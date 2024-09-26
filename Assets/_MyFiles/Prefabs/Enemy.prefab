@@ -104,6 +104,8 @@ GameObject:
   - component: {fileID: 1501335151299559094}
   - component: {fileID: 6298732583009147092}
   - component: {fileID: 6881706579658766903}
+  - component: {fileID: 1523348476297620125}
+  - component: {fileID: -9021636143937447779}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Untagged
@@ -261,22 +263,11 @@ MonoBehaviour:
   enemyState: 0
   additionalChaseTime: 2
   waitTime: 1.5
-  roamingRange: 20
   enemyManager: {fileID: 0}
   playerRef: {fileID: 0}
-  tempCallPos: {fileID: 0}
   targetPos: {fileID: 0}
   currentSpeed: 0
-  visualRadius: 15
-  visualAngle: 120
-  visualTargetMask:
-    serializedVersion: 2
-    m_Bits: 128
-  obstructionMask:
-    serializedVersion: 2
-    m_Bits: 64
-  playerLostCooldown: 0
-  canSeePlayer: 0
+  bCanSeePlayer: 0
 --- !u!54 &1501335151299559094
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -328,8 +319,41 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f36d4808ed688fa4a80455db7be75e02, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  bDrawDebug: 1
+  forgetTime: 0
   hearingRange: 30
   hearingThreshold: 30
-  noiseObjsInRange: []
   audibleNoiseList: []
   noiseCalculatedValues: []
+--- !u!114 &1523348476297620125
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2436419054086537201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 413fc12f97da7fd4a83967325072bc74, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bDrawDebug: 1
+  forgetTime: 2
+  visualRadius: 15
+  visualAngle: 120
+  visualTargetLostCooldown: 2
+  bCanSeeVisualTarget: 0
+--- !u!114 &-9021636143937447779
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2436419054086537201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6226cd62e41924b4ca0e80a66909f5fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tempCallPosName: RoamPos
+  roamingRange: 20

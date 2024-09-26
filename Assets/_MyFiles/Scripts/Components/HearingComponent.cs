@@ -1,11 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 [RequireComponent(typeof(SphereCollider))]
 public class HearingComponent : Sense
 {
-    //WIP rework to function on player
-    private NoiseManager _noiseManager;
     private UIManager _uIManager;
     [Header("Hearing Options")]
     [Range(1.0f, 50.0f)][SerializeField] float hearingRange = 30.0f;
@@ -43,6 +42,15 @@ public class HearingComponent : Sense
             }
         }
     }*/
+
+    public void RemoveFromAudibleNoiseList(GameObject noiseToRemove)
+    {
+        if (!audibleNoiseList.Contains(noiseToRemove))
+        {
+            return;
+        }
+        audibleNoiseList.Remove(noiseToRemove);
+    }
     public void UpdateNoiseMeter() ///used by player. may move later
     {
         _uIManager = GameManager.m_Instance.GetUIManager();
@@ -50,8 +58,6 @@ public class HearingComponent : Sense
     }
     private void Start()
     {
-        _noiseManager = GameManager.m_Instance.GetNoiseManager();
-
         SphereCollider colliderRange = GetComponent<SphereCollider>();
         colliderRange.isTrigger = true;
         colliderRange.radius = hearingRange;
@@ -77,6 +83,12 @@ public class HearingComponent : Sense
         {
             AddToAudibleNoiseList(stimuli.gameObject);
             Debug.Log(GetCurrentSensibleStimuliSet().Count);
+
+            /*NoiseComponent noise = stimuli.gameObject.GetComponent<NoiseComponent>();
+            if (noise != null && !noise.GetIsTriggered())
+            {
+                RemoveFromAudibleNoiseList(stimuli.gameObject);
+            }*/
         }
     }
     private void AddToAudibleNoiseList(GameObject noiseToAdd)
@@ -96,7 +108,6 @@ public class HearingComponent : Sense
             }
         }
         Debug.Log("Noise is inaudible! wasn't added to list.");
-        //_noiseManager.RemoveActiveNoise(noiseToAdd);//might remove
     }
     private float CalculateSingleNoiseValue(GameObject objToReceive)
     {

@@ -1,18 +1,23 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class Sense : MonoBehaviour
 {
     [SerializeField] private bool bDrawDebug = true;
+    [SerializeField][Range(0, 10)] private float forgetTime = 2.0f;
 
     private static HashSet<Stimuli> _registeredStimuliSet = new HashSet<Stimuli>();
     private HashSet<Stimuli> _currentSensibleStimuliSet = new HashSet<Stimuli>();
+
+    private Dictionary<Stimuli, Coroutine> _forgettingCoroutines = new Dictionary<Stimuli, Coroutine>();
 
     public HashSet<Stimuli> GetCurrentSensibleStimuliSet() 
     {
         Debug.Log($"current Sensible stim set count: {_currentSensibleStimuliSet.Count}");
         return _currentSensibleStimuliSet; 
     }
+    public bool GetCurrentSensibleStimuliSetIsntEmpty() { return _currentSensibleStimuliSet.Count > 0; }
     public static void RegisterStimuli(Stimuli stimuli) 
     {
         _registeredStimuliSet.Add(stimuli);
@@ -48,6 +53,13 @@ public abstract class Sense : MonoBehaviour
 
         _currentSensibleStimuliSet.Add(stimuli);
         Debug.Log($" added stim: {stimuli.gameObject.name}");
+
+        if (_forgettingCoroutines.ContainsKey(stimuli))
+        {
+            StopCoroutine(_forgettingCoroutines[stimuli]);
+            _forgettingCoroutines.Remove(stimuli);
+            return;
+        }
     }
 
     private void HandleNoSensibleStimuli(Stimuli stimuli)
@@ -55,7 +67,17 @@ public abstract class Sense : MonoBehaviour
         if (!_currentSensibleStimuliSet.Contains(stimuli)) { return; }
 
         _currentSensibleStimuliSet.Remove(stimuli);
-        Debug.Log($" removed stim: {stimuli.gameObject.name}");
+
+        if (forgetTime > 0.0f)
+        {
+            Coroutine forgettingCoroutine = StartCoroutine(ForgetStimuli(stimuli));
+            _forgettingCoroutines.Add(stimuli, forgettingCoroutine);
+        }
+    }
+    private IEnumerator ForgetStimuli(Stimuli stimuli) 
+    {
+        yield return new WaitForSeconds(forgetTime);
+        _forgettingCoroutines.Remove(stimuli);
     }
     private void OnDrawGizmos()
     {

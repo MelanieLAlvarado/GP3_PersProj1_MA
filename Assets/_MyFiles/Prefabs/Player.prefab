@@ -412,7 +412,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentNoiseMultiplier: 0
   triggerTimerValue: 0
-  isTriggerTimer: 0
+  bIsTriggerTimer: 0
 --- !u!135 &2677653805796907057
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -475,3 +475,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3dd88427d7008c14597b9bd0a7cb4647, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isVisuallyDetectable: 1
