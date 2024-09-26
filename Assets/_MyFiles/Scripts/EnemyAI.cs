@@ -27,7 +27,7 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] GameObject playerRef;
     [SerializeField] private Transform targetPos; ///position that holds other positions
 
-    [Header("Speed Options")]
+    [Header("Speed Options")] 
     private NavMeshAgent _enemy_NavMeshAgent;
     private Vector3 _prevPosition;
     [SerializeField] private float currentSpeed; //might make changeable later

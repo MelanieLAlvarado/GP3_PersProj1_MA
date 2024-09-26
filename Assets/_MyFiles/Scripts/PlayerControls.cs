@@ -1,9 +1,8 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using Quaternion = UnityEngine.Quaternion;
-using Vector2 = UnityEngine.Vector2;
-using Vector3 = UnityEngine.Vector3;
+using System.Collections;
+
 
 [RequireComponent(typeof(CharacterController))]
 [RequireComponent(typeof(PlayerInput))]
@@ -46,9 +45,11 @@ public class PlayerControls : MonoBehaviour
 
     [Header("Interaction info")]
     [SerializeField] private GameObject targetInteractible; ///interactible player has nearby
-    [SerializeField] private bool isInteracting; ///(for seeing input in editor)
-    [SerializeField] private bool isHiding;     ///(for seeing hiding bool in editor)
-    private Vector3 _prevHidePos;//Will be used to Lerp/Slerp player to before/after hiding
+    [SerializeField] private bool bIsInteracting; ///(for seeing input in editor)
+    [SerializeField] private bool bIsHiding;     ///(for seeing hiding bool in editor)
+    private bool _bIsHideLerping = false;
+    private Transform _prevHidePos;
+    [SerializeField] private float hideSpeed = 2f;
 
     [Header("Noise Options")] ///Will be passed onto NoiseComponent
     [SerializeField][Range(0, 50)] private float hearingThreshold = 0.0f;
@@ -64,9 +65,11 @@ public class PlayerControls : MonoBehaviour
     public EEntityType GetEntityType() { return entityType; }
     public EPlayerState GetPlayerState() { return playerState; }
     public GameObject GetTargetInteractible() { return targetInteractible; }
-    public bool GetIsHiding() { return isHiding; }
-    public Vector3 GetPrevHidePos() { return _prevHidePos; }
-    public void SetPrevHidePos(Vector3 posToSet) { _prevHidePos = posToSet; }
+    public bool GetIsHiding() { return bIsHiding; }
+    public void SetIsHideLerp(bool stateToSet) { _bIsHideLerping = stateToSet;}
+    public bool GetIsHideLerp() { return _bIsHideLerping; }
+    public Transform GetPrevHidePos() { return _prevHidePos; }
+    public void SetPrevHidePos(Transform transToSet) { _prevHidePos = transToSet; }
 
     public void SetTargetInteractible(GameObject interactionToSet)
     {
@@ -81,8 +84,12 @@ public class PlayerControls : MonoBehaviour
     public void ToggleIsHiding()
     {
         Debug.Log("toggle Hide!");
-        isHiding = !isHiding;
-        if (isHiding)
+        if (_bIsHideLerping)
+        {
+            return;
+        }
+        bIsHiding = !bIsHiding;
+        if (bIsHiding)
         {
             playerState = EPlayerState.hiding;
         }
@@ -96,7 +103,6 @@ public class PlayerControls : MonoBehaviour
         _playerInputActions = new PlayerInputActions();
         _playerInputActions.Player.Enable();
 
-        //programmatically add playerinputactions to actions list and connect unity events??
         _playerController = GetComponent<CharacterController>();
 
         _noiseComponent = GetComponent<NoiseComponent>();
@@ -112,8 +118,8 @@ public class PlayerControls : MonoBehaviour
         playerState = EPlayerState.walking;
         _currentMultiplier = walkMultiplier;
 
-        isInteracting = false;
-        isHiding = false;
+        bIsInteracting = false;
+        bIsHiding = false;
 
         _hearingComponent.SetCanDetectSelf(true);
         _hearingComponent.SetHearingThreshold(hearingThreshold);
@@ -122,10 +128,9 @@ public class PlayerControls : MonoBehaviour
     private void FixedUpdate()
     {
         ProcessNoise();
-        if (isHiding)
+        if (_bIsHideLerping) 
         {
             ProcessHide();
-            return;
         }
         ProcessMovement();
         ProcessSneak();
@@ -143,15 +148,33 @@ public class PlayerControls : MonoBehaviour
     private void ProcessHide()
     {
         ///at this point, the targetinteractible should be the hiding interaction
-        if (isHiding && targetInteractible.GetComponent<HidingInteraction>())
+        Transform hidePos = targetInteractible.GetComponent<HidingInteraction>().GetHidePos();
+        Transform startPos;
+        Transform targetPos;
+        if (bIsHiding)
         {
             ///will change to lerp/slerp later.
-            transform.position = targetInteractible.GetComponent<HidingInteraction>().GetHidePos().position;
+            startPos = _prevHidePos;
+            targetPos = hidePos;
         }
+        else
+        {
+            startPos = hidePos;
+            targetPos = _prevHidePos;
+        }
+        if (transform.position != targetPos.position)
+        {
+            transform.position = Vector3.Lerp(startPos.position, targetPos.position, Time.deltaTime * hideSpeed);
+        }
+        else
+        {
+            _bIsHideLerping = false;
+        }
+        Debug.Log($"Hide lerp is: {_bIsHideLerping}");
     }
     private void ProcessMovement()
     {
-        if (_bIsDefaultMovement == true && !isHiding)
+        if (_bIsDefaultMovement == true && !bIsHiding)
         {
             Vector2 inputVector = _playerInputActions.Player.Move.ReadValue<Vector2>();
             if (!_bIsSprinting)
@@ -185,7 +208,7 @@ public class PlayerControls : MonoBehaviour
     private void ProcessSneak()
     {
         float heightChange;
-        if (_bIsSneaking == true && !isHiding)
+        if (_bIsSneaking == true && !bIsHiding)
         {
             heightChange = sneakHeight;
         }
@@ -195,7 +218,7 @@ public class PlayerControls : MonoBehaviour
         }
         if (_playerController.height != heightChange)
         {
-            _playerController.height = Mathf.Lerp(_playerController.height, heightChange, sneakSpeed);
+            _playerController.height = Mathf.Lerp(_playerController.height, heightChange, Time.deltaTime * sneakSpeed);
         }
     }
     private void ProcessNoisesHeard()
@@ -291,12 +314,12 @@ public class PlayerControls : MonoBehaviour
     {
         if (context.performed && targetInteractible) 
         {
-            isInteracting = true;
+            bIsInteracting = true;
             targetInteractible.GetComponent<IInterActions>().OnInteraction();///Hiding or noisemakers interactible
         }
         if (context.canceled)
         {
-            isInteracting = false;
+            bIsInteracting = false;
         }
     }
 }

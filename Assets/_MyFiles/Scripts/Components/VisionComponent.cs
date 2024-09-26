@@ -2,8 +2,6 @@ using UnityEngine;
 
 public class VisionComponent : Sense
 {
-    ///Might move to its own script... Vision Component
-
     [Header("Field of View Options")]
     [SerializeField] private float visualRadius;
     [Range(0, 360)][SerializeField] private float visualAngle;

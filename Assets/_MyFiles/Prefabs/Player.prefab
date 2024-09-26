@@ -280,8 +280,9 @@ MonoBehaviour:
   xSensitivity: 30
   ySensitivity: 30
   targetInteractible: {fileID: 0}
-  isInteracting: 0
-  isHiding: 0
+  bIsInteracting: 0
+  bIsHiding: 0
+  hideSpeed: 2
   hearingThreshold: 0
   idleMultiplier: 0
   sneakMultiplier: 0.2
@@ -447,6 +448,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bDrawDebug: 1
+  forgetTime: 2
   hearingRange: 30
   hearingThreshold: 20
   audibleNoiseList: []
