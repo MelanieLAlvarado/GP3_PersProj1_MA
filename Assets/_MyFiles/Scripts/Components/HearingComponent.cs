@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -12,6 +13,7 @@ public class HearingComponent : Sense
     [Range(1.0f, 50.0f)][SerializeField] float hearingRange = 30.0f;
     [Range(0f, 100f)][SerializeField] float hearingThreshold = 20.0f;
     private bool _bAreNoisesInaudible = true;
+    [Range(0f, 10f)] [SerializeField] float _forgetTimer = 2f;
     private bool _bCanDetectSelf = false;//May be obsolete
 
     [Header("Hearing List Info [READ ONLY]")]
@@ -21,6 +23,7 @@ public class HearingComponent : Sense
     [SerializeField] private List<float> noiseCalculatedValues = new List<float>();*/
     private float targetNoiseCalculatedValue = 0.0f;
     private Transform _hearingTarget;
+    private Vector3 _prevPosition;
 
     public bool GetAreNoisesInaudible() { return _bAreNoisesInaudible; }
     //public List<float> GetNoiseCalculatedValues() { return noiseCalculatedValues; }
@@ -135,12 +138,12 @@ public class HearingComponent : Sense
                 _audibleNoiseDict.Remove(stimuli);
             }
         }
-        if (!CompareNoiseCounts())
+        if (!IsNoisesCountMoreThanSenses())
         {
             _audibleNoiseDict.Clear();
         }
     }
-    private bool CompareNoiseCounts() 
+    private bool IsNoisesCountMoreThanSenses() 
     {
 
         return _audibleNoiseDict.Count <= GetCurrentSensibleStimuliSet().Count;
@@ -189,7 +192,7 @@ public class HearingComponent : Sense
     public Transform ChooseNoiseTarget()
     {
         ///iterates through the list to find the highest noise value
-        if (GetIsAudibleNoisesPresent() && CompareNoiseCounts())
+        if (GetIsAudibleNoisesPresent() && IsNoisesCountMoreThanSenses())
         { 
             float loudestNoise = _audibleNoiseDict.ElementAt(0).Value;
             int loudestStimuliIndex = 0;
@@ -210,10 +213,15 @@ public class HearingComponent : Sense
                 return _hearingTarget;
             }
         }
-        _hearingTarget = null; //crashing!~! Add check for previous heard position!!
-        targetNoiseCalculatedValue = 0.0f;
-        _bAreNoisesInaudible = true;
-        return null;
+
+        if (!_bAreNoisesInaudible)
+        {
+            _bAreNoisesInaudible = true;
+            _hearingTarget = null;
+            targetNoiseCalculatedValue = 0.0f;
+            //StartCoroutine(ForgetTarget(_forgetTimer));
+        } 
+        return _hearingTarget;
 
 
         //CalculateNoiseValues();
@@ -245,6 +253,15 @@ public class HearingComponent : Sense
         _bAreNoisesInaudible = true;
         return null;*/
     }
+
+    private IEnumerator ForgetTarget(float forgetTargetTime) //might swap to going to previous position
+    {
+        yield return new WaitForSeconds(forgetTargetTime);
+        _hearingTarget = null;
+        targetNoiseCalculatedValue = 0.0f;
+        StopCoroutine(ForgetTarget(forgetTargetTime));
+    }
+
     public void ClearAudibleLists() ///reseting the sounds heard
     {
         _hearingTarget = null;

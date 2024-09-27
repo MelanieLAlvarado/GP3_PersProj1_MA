@@ -261,7 +261,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enemyState: 0
-  additionalChaseTime: 2
   waitTime: 1.5
   enemyManager: {fileID: 0}
   playerRef: {fileID: 0}
@@ -320,9 +319,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bDrawDebug: 1
-  forgetTime: 4
+  forgetTime: 0
   hearingRange: 30
   hearingThreshold: 30
+  _forgetTimer: 0
 --- !u!114 &1523348476297620125
 MonoBehaviour:
   m_ObjectHideFlags: 0

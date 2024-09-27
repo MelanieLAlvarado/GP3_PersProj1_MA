@@ -15,7 +15,6 @@ public class EnemyAI : MonoBehaviour
 
     private TimerComponent _waitTimer;
     [SerializeField] EEnemyState enemyState;
-    [Range(0f, 10f)][SerializeField] private float additionalChaseTime = 2f; //will be used to change chase timer max val
 
     [Header("Roam/WaitTime Options")]
     [Range(0f, 10f)][SerializeField] private float waitTime = 1.5f;
@@ -121,9 +120,9 @@ public class EnemyAI : MonoBehaviour
         {
             case EEnemyState.wait:
                 ///do nothing
+                _hearingComponent.ClearAudibleLists();
                 targetPos = _roamingComponent.GetRoamPos();
                 targetPos.position = transform.position;
-                _hearingComponent.ClearAudibleLists();
                 _waitTimer.ResetTimer();
                 //_waitTimer.SetRunTimer(true);
                 break;
@@ -146,12 +145,16 @@ public class EnemyAI : MonoBehaviour
                     }
                 }*/
                 targetPos = _hearingComponent.ChooseNoiseTarget();
-                //Debug.Log($"~TargetPos : {targetPos.name}");
                 InvestigateNoise();
+                if (targetPos == null)
+                {
+                    //SetEnemyState(EEnemyState.wait);//change when get time
+                    return;
+                }
+                //Debug.Log($"~TargetPos : {targetPos.name}");
                 GoToTarget();
                 break;
             case EEnemyState.chase:
-                //will evolve to include chasing the player for a short time after leaving the visual field
                 //  and will include a way to decide to pull player out of hiding spots if the player
                 //  was seen as they hid. 
                 if (_hearingComponent.GetIsAudibleNoisesPresent())
@@ -165,7 +168,7 @@ public class EnemyAI : MonoBehaviour
     }
     private bool IsTargetAtStoppingDistance() 
     {
-        float targetDist = Vector3.Distance(transform.position, targetPos.position);
+        float targetDist = Vector3.Distance(transform.position, _enemy_NavMeshAgent.destination);
         if (targetDist < _enemy_NavMeshAgent.stoppingDistance)
         {
             return true;
@@ -222,11 +225,14 @@ public class EnemyAI : MonoBehaviour
     {
         Debug.Log("Investigating noise...");
         ///TargetPos is determined by hearing component.
-        _enemy_NavMeshAgent.destination = targetPos.transform.position;
         if (IsTargetAtStoppingDistance()) 
         {
             _hearingComponent.ClearAudibleLists();
-            NoiseComponent targetNoise = targetPos.gameObject.GetComponent<NoiseComponent>();
+            NoiseComponent targetNoise = null;
+            if (targetPos != null)
+            {
+                targetNoise = targetPos.gameObject.GetComponent<NoiseComponent>();
+            }
             if (targetNoise != null)
             {
                 targetNoise.SetIsTriggered(false);
@@ -235,43 +241,5 @@ public class EnemyAI : MonoBehaviour
             SetEnemyState(EEnemyState.wait);
         }
     }
-    /*private void Roam() ///Gets a random transform position and saves it on tempCallPos which is set to TargetPos
-    {
-        if (targetPos != null)
-        {
-            targetPos = tempCallPos;
-            targetPos.position = new Vector3(targetPos.position.x, transform.position.y, targetPos.position.z);
-            if (IsTargetAtStoppingDistance())
-            {
-                Vector3 point;
-                if (RandomPoint(transform.position, roamingRange, out point)) ///Gets random point
-                {
-                    Debug.DrawRay(point, Vector3.up, Color.blue, 1.0f);
-
-                    targetPos.position = new Vector3(point.x, transform.position.y, point.z);
-                    ///Sets targetPos to the point x and y but the enemy's y position (might change)
-                }
-            }
-            _enemy_NavMeshAgent.destination = targetPos.transform.position;
-        }
-        else
-        {
-            targetPos = tempCallPos; ///if the targetPos is null it is set to the tempCallPos
-            _enemy_NavMeshAgent.destination = targetPos.transform.position;
-        }
-    }
-
-    private bool RandomPoint(Vector3 center, float range, out Vector3 result) 
-    {///Gets Random point in roamrange that is on the navmesh
-        Vector3 randomPoint = center + Random.insideUnitSphere * range;
-        NavMeshHit hit;
-        if (NavMesh.SamplePosition(randomPoint, out hit, 1.0f, NavMesh.AllAreas))
-        {
-            result = hit.position;
-            return true;
-        }
-        result = Vector3.zero;
-        return false;
-    }*/
 }
 public enum EEnemyState { wait, roam, curious, chase} ///Enemy action state
