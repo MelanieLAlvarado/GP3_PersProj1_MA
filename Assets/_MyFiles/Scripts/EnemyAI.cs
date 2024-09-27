@@ -146,6 +146,7 @@ public class EnemyAI : MonoBehaviour
                     }
                 }*/
                 targetPos = _hearingComponent.ChooseNoiseTarget();
+                //Debug.Log($"~TargetPos : {targetPos.name}");
                 InvestigateNoise();
                 GoToTarget();
                 break;

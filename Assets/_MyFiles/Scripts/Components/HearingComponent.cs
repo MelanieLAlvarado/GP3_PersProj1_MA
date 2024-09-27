@@ -133,13 +133,17 @@ public class HearingComponent : Sense
             {
                 //Debug.Log("This obj is already in list!");
                 _audibleNoiseDict.Remove(stimuli);
-                return;
             }
-        } 
-        if (_audibleNoiseDict.Count > GetCurrentSensibleStimuliSet().Count)
+        }
+        if (!CompareNoiseCounts())
         {
             _audibleNoiseDict.Clear();
         }
+    }
+    private bool CompareNoiseCounts() 
+    {
+
+        return _audibleNoiseDict.Count <= GetCurrentSensibleStimuliSet().Count;
     }
 
     /*private void AddToAudibleNoiseList(GameObject noiseToAdd)
@@ -185,7 +189,7 @@ public class HearingComponent : Sense
     public Transform ChooseNoiseTarget()
     {
         ///iterates through the list to find the highest noise value
-        if (GetIsAudibleNoisesPresent())
+        if (GetIsAudibleNoisesPresent() && CompareNoiseCounts())
         { 
             float loudestNoise = _audibleNoiseDict.ElementAt(0).Value;
             int loudestStimuliIndex = 0;
@@ -206,7 +210,7 @@ public class HearingComponent : Sense
                 return _hearingTarget;
             }
         }
-        _hearingTarget = null;
+        _hearingTarget = null; //crashing!~! Add check for previous heard position!!
         targetNoiseCalculatedValue = 0.0f;
         _bAreNoisesInaudible = true;
         return null;

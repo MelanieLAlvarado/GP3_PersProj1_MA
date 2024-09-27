@@ -116,7 +116,7 @@ public class PlayerControls : MonoBehaviour
         _bIsSprinting = false;
         speed = walkSpeed;
 
-        playerState = EPlayerState.walking;
+        playerState = EPlayerState.idle;
         _currentMultiplier = walkMultiplier;
 
         bIsInteracting = false;
@@ -178,21 +178,8 @@ public class PlayerControls : MonoBehaviour
         if (_bIsDefaultMovement == true && !bIsHiding)
         {
             Vector2 inputVector = _playerInputActions.Player.Move.ReadValue<Vector2>();
-            if (!_bIsSprinting)
-            {
-                if (inputVector.x == 0 && inputVector.y == 0)
-                {
-                    playerState = EPlayerState.idle;
-                }
-                else if (_bIsSneaking) 
-                {
-                    playerState = EPlayerState.sneaking;
-                }
-                else
-                {
-                    playerState = EPlayerState.walking;
-                }
-            }
+            ProcessMovementType(inputVector);
+            
             Vector3 movementDirection = new Vector3(inputVector.x, 0, inputVector.y);
             _playerController.Move(transform.TransformDirection(movementDirection) * (speed * Time.deltaTime));
 
@@ -206,6 +193,28 @@ public class PlayerControls : MonoBehaviour
         }
     }
 
+    private void ProcessMovementType(Vector3 inputVector) 
+    {
+        if (inputVector.x == 0.0f && inputVector.y == 0.0f)
+        {
+            playerState = EPlayerState.idle;
+        }
+        else
+        {
+            if (_bIsSprinting)
+            {
+                playerState = EPlayerState.sprinting;
+            }
+            else if (_bIsSneaking)
+            {
+                playerState = EPlayerState.sneaking;
+            }
+            else
+            {
+                playerState = EPlayerState.walking;
+            }
+        }
+    }
     private void ProcessSneak()
     {
         float heightChange;
@@ -224,15 +233,16 @@ public class PlayerControls : MonoBehaviour
     }
     private void ProcessNoisesHeard()
     {
-        if (_hearingComponent && _hearingComponent.GetIsAudibleNoisesPresent())
+        if (_hearingComponent)
         {///not using transform, but getting float values calculated for noisemeter
             _hearingComponent.ChooseNoiseTarget();
-            _hearingComponent.UpdateNoiseMeter();
-            if (_timerComponent.IsTimerFinished()) ///1.0f second wait time
+            _hearingComponent.UpdateNoiseMeter();//move reference completely to player.
+
+            /*if (_timerComponent.IsTimerFinished()) ///1.0f second wait time
             { 
                 _hearingComponent.ClearAudibleLists();
                 _timerComponent.ResetTimer();
-            }
+            }*/
         }
     }
     private void ProcessNoise() 
@@ -282,14 +292,12 @@ public class PlayerControls : MonoBehaviour
         if (context.performed && _bIsSneaking == false && playerState != EPlayerState.hiding)
         {
             _bIsSprinting = true;
-            playerState = EPlayerState.sprinting;
             speed = sprintSpeed;
         }
 
         if (context.canceled && _bIsSneaking == false && playerState != EPlayerState.hiding)
         {
             _bIsSprinting = false;
-            playerState = EPlayerState.walking;
             speed = walkSpeed;
         }
     }
@@ -299,14 +307,12 @@ public class PlayerControls : MonoBehaviour
         if (context.performed && _bIsGrounded == true && playerState != EPlayerState.hiding)
         {
             _bIsSneaking = true;
-            playerState = EPlayerState.sneaking;
             speed = sneakSpeed;
         }
 
         if (context.canceled && playerState != EPlayerState.hiding)
         {
             _bIsSneaking = false;
-            playerState = EPlayerState.walking;
             speed = walkSpeed;
         }
     }
