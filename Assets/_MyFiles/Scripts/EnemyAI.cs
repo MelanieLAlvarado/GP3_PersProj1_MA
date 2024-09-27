@@ -94,11 +94,11 @@ public class EnemyAI : MonoBehaviour
     }
     private void ProcessEnemyAI() ///checks conditions and sets enemy state
     {
-        /*if (enemyState == EEnemyState.wait && !_waitTimer.IsTimerFinished())
+        if (enemyState == EEnemyState.wait && !_waitTimer.IsTimerFinished())
         {
             ///Waiting based on timer component (waitTimer)
             return;
-        }*/
+        }
         //timer for when player is lost?
         if (_visionComponent.GetCurrentSensibleStimuliSetIsntEmpty())
         {
@@ -136,15 +136,16 @@ public class EnemyAI : MonoBehaviour
                 break;
             case EEnemyState.curious:
                 ///swap target to an audible sound
-
-                if (_hearingComponent.GetNoiseCalculatedValues().Count == 0 || targetPos == _roamingComponent.GetRoamPos())
+                
+                /*if (!_hearingComponent.GetIsAudibleNoisesPresent() || targetPos == _roamingComponent.GetRoamPos())
                 {
                     targetPos = _hearingComponent.ChooseNoiseTarget();
                     if (targetPos == null)
                     {
                         SetEnemyState(EEnemyState.wait);//may replace with a continue chase timer
                     }
-                }
+                }*/
+                targetPos = _hearingComponent.ChooseNoiseTarget();
                 InvestigateNoise();
                 GoToTarget();
                 break;
@@ -228,7 +229,7 @@ public class EnemyAI : MonoBehaviour
             if (targetNoise != null)
             {
                 targetNoise.SetIsTriggered(false);
-                _hearingComponent.RemoveFromAudibleNoiseList(targetPos.gameObject);
+                _hearingComponent.RemoveFromAudibleNoiseDict(targetPos.gameObject);
             }
             SetEnemyState(EEnemyState.wait);
         }

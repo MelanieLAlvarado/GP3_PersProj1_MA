@@ -282,7 +282,7 @@ MonoBehaviour:
   targetInteractible: {fileID: 0}
   bIsInteracting: 0
   bIsHiding: 0
-  hideSpeed: 2
+  hideSpeed: 15
   hearingThreshold: 0
   idleMultiplier: 0
   sneakMultiplier: 0.2
@@ -451,8 +451,6 @@ MonoBehaviour:
   forgetTime: 2
   hearingRange: 30
   hearingThreshold: 20
-  audibleNoiseList: []
-  noiseCalculatedValues: []
 --- !u!114 &955971924533794263
 MonoBehaviour:
   m_ObjectHideFlags: 0

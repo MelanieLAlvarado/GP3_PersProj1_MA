@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -16,16 +17,16 @@ public class HearingComponent : Sense
     [Header("Hearing List Info [READ ONLY]")]
     private Dictionary<Stimuli, float> _audibleNoiseDict = new Dictionary<Stimuli, float>();
 
-    [SerializeField] private List<GameObject> audibleNoiseList = new List<GameObject>();
-    [SerializeField] private List<float> noiseCalculatedValues = new List<float>();
+    /*[SerializeField] private List<GameObject> audibleNoiseList = new List<GameObject>();
+    [SerializeField] private List<float> noiseCalculatedValues = new List<float>();*/
     private float targetNoiseCalculatedValue = 0.0f;
     private Transform _hearingTarget;
 
     public bool GetAreNoisesInaudible() { return _bAreNoisesInaudible; }
-    public List<float> GetNoiseCalculatedValues() { return noiseCalculatedValues; }
+    //public List<float> GetNoiseCalculatedValues() { return noiseCalculatedValues; }
     public bool GetIsAudibleNoisesPresent() ///usually starts the hearing process in other scripts
     {
-        return audibleNoiseList.Count > 0; 
+        return _audibleNoiseDict.Count > 0; 
     }
     public void SetCanDetectSelf(bool detectToSet) 
     {
@@ -47,13 +48,21 @@ public class HearingComponent : Sense
         }
     }*/
 
-    public void RemoveFromAudibleNoiseList(GameObject noiseToRemove)
+    /*public void RemoveFromAudibleNoiseList(GameObject noiseToRemove)
     {
         if (!audibleNoiseList.Contains(noiseToRemove))
         {
             return;
         }
         audibleNoiseList.Remove(noiseToRemove);
+    }*/
+    public void RemoveFromAudibleNoiseDict(GameObject noiseToRemove) 
+    {
+        Stimuli stimuliKey= noiseToRemove.GetComponent<Stimuli>();
+        if (_audibleNoiseDict.ContainsKey(stimuliKey))
+        {
+            _audibleNoiseDict.Remove(stimuliKey);
+        }
     }
     public void UpdateNoiseMeter() ///used by player. may move later
     {
@@ -85,8 +94,9 @@ public class HearingComponent : Sense
     {
         foreach (Stimuli stimuli in GetCurrentSensibleStimuliSet())
         {
-            AddToAudibleNoiseList(stimuli.gameObject);
+            //AddToAudibleNoiseList(stimuli.gameObject);
             UpdateAudibleStimuliDict(stimuli);
+
 
             /*NoiseComponent noise = stimuli.gameObject.GetComponent<NoiseComponent>();
             if (noise != null && !noise.GetIsTriggered())
@@ -94,13 +104,14 @@ public class HearingComponent : Sense
                 RemoveFromAudibleNoiseList(stimuli.gameObject);
             }*/
         }
+        Debug.Log($"{this.gameObject.name} -- audible noise dictionary: {_audibleNoiseDict.Count}");
+        Debug.Log($"{this.gameObject.name} -- current sensible stimuli : {GetCurrentSensibleStimuliSet().Count}");
     }
 
     private void UpdateAudibleStimuliDict(Stimuli stimuli)
     {
         float stimuliNoise = CalculateSingleNoiseValue(stimuli.gameObject);
-
-        if (stimuliNoise >= hearingThreshold)
+        if (stimuliNoise > hearingThreshold)
         {
             //Debug.Log("Noise has been added...");
 
@@ -111,22 +122,27 @@ public class HearingComponent : Sense
                 return;
             }
             NoiseComponent noiseComp = stimuli.gameObject.GetComponent<NoiseComponent>();
-            if (noiseComp.GetIsTriggered() == true)
+            if (noiseComp && noiseComp.GetIsTriggered() == true)
             {
                 _audibleNoiseDict.Add(stimuli, stimuliNoise);
             }
-        } else
+        }
+        else 
         {
             if (_audibleNoiseDict.ContainsKey(stimuli))
             {
                 //Debug.Log("This obj is already in list!");
-                _audibleNoiseDict.Remove(stimuli); 
+                _audibleNoiseDict.Remove(stimuli);
                 return;
             }
+        } 
+        if (_audibleNoiseDict.Count > GetCurrentSensibleStimuliSet().Count)
+        {
+            _audibleNoiseDict.Clear();
         }
     }
 
-    private void AddToAudibleNoiseList(GameObject noiseToAdd)
+    /*private void AddToAudibleNoiseList(GameObject noiseToAdd)
     {
         if (audibleNoiseList.Contains(noiseToAdd))
         {
@@ -143,7 +159,7 @@ public class HearingComponent : Sense
             }
         }
         //Debug.Log("Noise is inaudible! wasn't added to list.");
-    }
+    }*/
     private float CalculateSingleNoiseValue(GameObject objToReceive)
     {
         float iDistance = Vector3.Distance(transform.position, objToReceive.transform.position);
@@ -155,7 +171,7 @@ public class HearingComponent : Sense
         return noiseComp.GetRawNoiseAmount() * distMultiplier;
     }
 
-    private void CalculateNoiseValues() ///saving each noise value
+    /*private void CalculateNoiseValues() ///saving each noise value
     {//might not use this after all?
         if (audibleNoiseList.Count > 0)
         {
@@ -165,12 +181,39 @@ public class HearingComponent : Sense
                 noiseCalculatedValues.Add(noiseCalcVal);
             }
         }
-    }
+    }*/
     public Transform ChooseNoiseTarget()
     {
         ///iterates through the list to find the highest noise value
-        CalculateNoiseValues();
-        int index = 0;
+        if (GetIsAudibleNoisesPresent())
+        { 
+            float loudestNoise = _audibleNoiseDict.ElementAt(0).Value;
+            int loudestStimuliIndex = 0;
+            for (int i = 1; i < _audibleNoiseDict.Count; i++) ///choose the sound with the highest noise
+            {
+                float iNoiseToCheck = _audibleNoiseDict.ElementAt(i).Value;
+                if (loudestNoise <= iNoiseToCheck)
+                {
+                    loudestNoise = iNoiseToCheck;
+                    loudestStimuliIndex = i;
+                }
+            }
+            if (loudestNoise > hearingThreshold)
+            {
+                targetNoiseCalculatedValue = loudestNoise;
+                _hearingTarget = _audibleNoiseDict.ElementAt(loudestStimuliIndex).Key.transform;
+                _bAreNoisesInaudible = false;
+                return _hearingTarget;
+            }
+        }
+        _hearingTarget = null;
+        targetNoiseCalculatedValue = 0.0f;
+        _bAreNoisesInaudible = true;
+        return null;
+
+
+        //CalculateNoiseValues();
+        /*int index = 0;
         float noiseNum = noiseCalculatedValues[index];
         Transform targetPos = audibleNoiseList[index].transform;
         for (int i = 1; i < audibleNoiseList.Count; i++) ///choose the sound with the highest noise
@@ -182,11 +225,11 @@ public class HearingComponent : Sense
                 index = i;
             }
         }
-        targetPos = audibleNoiseList[index].transform;
+        targetPos = audibleNoiseList[index].transform;*/
         //Debug.Log($"noiseNum == {noiseNum}!");
         //_noiseManager.ClearActiveNoiseList();
 
-        targetNoiseCalculatedValue = noiseCalculatedValues[index];
+        /*targetNoiseCalculatedValue = noiseCalculatedValues[index];
         noiseCalculatedValues.Clear();
         _hearingTarget = targetPos;
         if (noiseNum > hearingThreshold)
@@ -196,12 +239,16 @@ public class HearingComponent : Sense
         }
         targetNoiseCalculatedValue = 0.0f;
         _bAreNoisesInaudible = true;
-        return null;
+        return null;*/
     }
     public void ClearAudibleLists() ///reseting the sounds heard
     {
-        audibleNoiseList.Clear();
-        noiseCalculatedValues.Clear();
+        _hearingTarget = null;
+        targetNoiseCalculatedValue = 0.0f;
+        _bAreNoisesInaudible = true;
+        _audibleNoiseDict.Clear();
+        /*audibleNoiseList.Clear();
+        noiseCalculatedValues.Clear();*/
     }
 
     /*private bool IsInHearingRange(Transform otherObject) 
@@ -222,6 +269,7 @@ public class HearingComponent : Sense
         {
             if (targetNoiseCalculatedValue > hearingThreshold)
             {
+                Debug.Log($"TargetNoiseCalcVal : ==== {targetNoiseCalculatedValue}");
                 Debug.DrawRay(_hearingTarget.position, Vector3.up, UnityEngine.Color.magenta, 0.1f);
             }
             else

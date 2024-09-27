@@ -138,7 +138,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentNoiseMultiplier: 1
   triggerTimerValue: 1
-  bIsTriggerTimer: 0
+  bIsTriggerTimer: 1
 --- !u!114 &6810466850208804044
 MonoBehaviour:
   m_ObjectHideFlags: 0

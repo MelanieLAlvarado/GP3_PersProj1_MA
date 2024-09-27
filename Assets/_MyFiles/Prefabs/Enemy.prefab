@@ -323,8 +323,6 @@ MonoBehaviour:
   forgetTime: 4
   hearingRange: 30
   hearingThreshold: 30
-  audibleNoiseList: []
-  noiseCalculatedValues: []
 --- !u!114 &1523348476297620125
 MonoBehaviour:
   m_ObjectHideFlags: 0

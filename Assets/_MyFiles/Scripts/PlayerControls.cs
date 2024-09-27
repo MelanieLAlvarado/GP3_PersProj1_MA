@@ -25,6 +25,7 @@ public class PlayerControls : MonoBehaviour
     [SerializeField] private float sneakHeight;
     private bool _bIsSneaking;
 
+    [SerializeField] private float sneakLerpSpeed = 10f;
     [SerializeField][Range(1.0f, 6.0f)] private float sneakSpeed = 2f;
     [SerializeField][Range(1.0f, 8.0f)] private float walkSpeed = 6f;
     [SerializeField][Range(1.0f, 10.0f)] private float sprintSpeed = 8f;
@@ -49,7 +50,7 @@ public class PlayerControls : MonoBehaviour
     [SerializeField] private bool bIsHiding;     ///(for seeing hiding bool in editor)
     private bool _bIsHideLerping = false;
     private Transform _prevHidePos;
-    [SerializeField] private float hideSpeed = 2f;
+    [SerializeField] private float hideLerpSpeed = 2f;
 
     [Header("Noise Options")] ///Will be passed onto NoiseComponent
     [SerializeField][Range(0, 50)] private float hearingThreshold = 0.0f;
@@ -164,7 +165,7 @@ public class PlayerControls : MonoBehaviour
         }
         if (transform.position != targetPos.position)
         {
-            transform.position = Vector3.Lerp(startPos.position, targetPos.position, Time.deltaTime * hideSpeed);
+            transform.position = Vector3.Lerp(startPos.position, targetPos.position, Time.deltaTime * hideLerpSpeed);
         }
         else
         {
@@ -218,7 +219,7 @@ public class PlayerControls : MonoBehaviour
         }
         if (_playerController.height != heightChange)
         {
-            _playerController.height = Mathf.Lerp(_playerController.height, heightChange, Time.deltaTime * sneakSpeed);
+            _playerController.height = Mathf.Lerp(_playerController.height, heightChange, Time.deltaTime * sneakLerpSpeed);
         }
     }
     private void ProcessNoisesHeard()
