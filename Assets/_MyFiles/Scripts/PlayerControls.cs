@@ -152,20 +152,20 @@ public class PlayerControls : MonoBehaviour
         ///at this point, the targetinteractible should be the hiding interaction
         Transform hidePos = targetInteractible.GetComponent<HidingInteraction>().GetHidePos();
         Transform startPos;
-        Transform targetPos;
+        Transform endPos;
         if (bIsHiding)  ///will change to lerp/slerp later.
         {
             startPos = _prevHidePos;
-            targetPos = hidePos;
+            endPos = hidePos;
         }
         else
         {
             startPos = hidePos;
-            targetPos = _prevHidePos;
+            endPos = _prevHidePos;
         }
-        if (transform.position != targetPos.position)
+        if (transform.position != endPos.position)
         {
-            transform.position = Vector3.Lerp(startPos.position, targetPos.position, Time.deltaTime * hideLerpSpeed);
+            transform.position = Vector3.Slerp(startPos.position, endPos.position, Time.deltaTime * hideLerpSpeed);
         }
         else
         {

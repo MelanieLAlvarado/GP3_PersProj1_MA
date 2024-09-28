@@ -8,38 +8,42 @@ public class VisionComponent : Sense
     [Range(0, 360)][SerializeField] private float visualAngle;
 
     [SerializeField] private bool bCanSeeVisualTarget;
-    private GameObject visualTarget = null;
+    private GameObject _visualTarget = null;
 
     protected override bool IsStimuliSensible(Stimuli stimuli)
     {
         if (!transform.InRangeOf(stimuli.transform, visualRadius))
         {
             bCanSeeVisualTarget = false;
-            visualTarget = null;
+            _visualTarget = null;
             return false;
         }
-        if (!transform.InAngleOf(stimuli.transform, visualAngle))
+        if (!transform.InAngleOf(stimuli.transform, visualAngle/2))
         {
             bCanSeeVisualTarget = false;
-            visualTarget = null;
+            _visualTarget = null;
             return false;
         }
-        if (transform.IsBlockedTo(stimuli.transform, Vector3.up, visualRadius))
+        //PlayerControls player = stimuli.GetComponent<PlayerControls>();
+        
+        if (transform.IsBlockedTo(stimuli.transform, Vector3.up, visualRadius) /*&& bCanSeeVisualTarget && player.GetIsHiding()*/)
         {
+            //check IsHiding and CanSeeVisualTarget(! too)
+            //if !IsHiding, then continue and make it false 100%
             bCanSeeVisualTarget = false;
-            visualTarget = null;
+            _visualTarget = null;
             return false;
         }
-        if (!stimuli.GetIsVisuallyDetectable())
+        if (!stimuli.GetIsVisuallyDetectable() || stimuli.GetComponent<PlayerControls>().GetIsHiding())
         {
             bCanSeeVisualTarget = false;
-            visualTarget = null;
+            _visualTarget = null;
             return false;
         }
         Debug.Log($"CAN SEE {stimuli.gameObject.name}");
         bCanSeeVisualTarget = true; //Determine whether to chase here
 
-        visualTarget = stimuli.gameObject;
+        _visualTarget = stimuli.gameObject;
         return true;
     }
     /*private bool FieldOfViewCheck()
@@ -85,9 +89,9 @@ public class VisionComponent : Sense
 
         Gizmos.DrawLine(transform.position + Vector3.up, transform.position + Vector3.up + lineLeft * visualRadius);
         Gizmos.DrawLine(transform.position + Vector3.up, transform.position + Vector3.up + lineRight * visualRadius);
-        if (visualTarget)
+        if (_visualTarget)
         {
-            Debug.DrawRay(visualTarget.transform.position, Vector3.up, UnityEngine.Color.red, 0.1f);
+            Debug.DrawRay(_visualTarget.transform.position, Vector3.up, UnityEngine.Color.red, 0.1f);
         }
     }
 }

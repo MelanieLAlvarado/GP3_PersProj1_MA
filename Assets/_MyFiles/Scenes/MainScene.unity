@@ -302,7 +302,7 @@ GameObject:
   - component: {fileID: 176437204}
   - component: {fileID: 176437203}
   - component: {fileID: 176437202}
-  - component: {fileID: 176437201}
+  - component: {fileID: 176437206}
   m_Layer: 0
   m_Name: Capsule
   m_TagString: Untagged
@@ -310,22 +310,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &176437201
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 176437200}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f36d4808ed688fa4a80455db7be75e02, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  bDrawDebug: 1
-  forgetTime: 0
-  hearingRange: 30
-  hearingThreshold: 20
 --- !u!136 &176437202
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -417,6 +401,23 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &176437206
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 176437200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 413fc12f97da7fd4a83967325072bc74, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bDrawDebug: 1
+  forgetTime: 5
+  visualRadius: 0
+  visualAngle: 120
+  bCanSeeVisualTarget: 0
 --- !u!1 &203844586
 GameObject:
   m_ObjectHideFlags: 0
