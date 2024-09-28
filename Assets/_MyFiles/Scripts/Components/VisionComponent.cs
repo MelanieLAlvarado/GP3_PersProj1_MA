@@ -7,11 +7,22 @@ public class VisionComponent : Sense
     [SerializeField] private float visualRadius;
     [Range(0, 360)][SerializeField] private float visualAngle;
 
+    private bool _bCannotSeeCondition = true;
     [SerializeField] private bool bCanSeeVisualTarget;
     private GameObject _visualTarget = null;
 
+    public bool GetCanSeeVisualTarget() { return bCanSeeVisualTarget; }
+    public bool GetCannotSeeCondition() { return _bCannotSeeCondition; }
+    public void SetCannotSeeCondition(bool stateToSet) { _bCannotSeeCondition = stateToSet; }
+
     protected override bool IsStimuliSensible(Stimuli stimuli)
     {
+        if (!stimuli.GetIsVisuallyDetectable()) ///stimuli cannot be chased/seen
+        {
+            bCanSeeVisualTarget = false;
+            _visualTarget = null;
+            return false;
+        }
         if (!transform.InRangeOf(stimuli.transform, visualRadius))
         {
             bCanSeeVisualTarget = false;
@@ -24,9 +35,8 @@ public class VisionComponent : Sense
             _visualTarget = null;
             return false;
         }
-        //PlayerControls player = stimuli.GetComponent<PlayerControls>();
-        
-        if (transform.IsBlockedTo(stimuli.transform, Vector3.up, visualRadius) /*&& bCanSeeVisualTarget && player.GetIsHiding()*/)
+
+        if (transform.IsBlockedTo(stimuli.transform, Vector3.up, visualRadius))
         {
             //check IsHiding and CanSeeVisualTarget(! too)
             //if !IsHiding, then continue and make it false 100%
@@ -34,12 +44,7 @@ public class VisionComponent : Sense
             _visualTarget = null;
             return false;
         }
-        if (!stimuli.GetIsVisuallyDetectable() || stimuli.GetComponent<PlayerControls>().GetIsHiding())
-        {
-            bCanSeeVisualTarget = false;
-            _visualTarget = null;
-            return false;
-        }
+
         Debug.Log($"CAN SEE {stimuli.gameObject.name}");
         bCanSeeVisualTarget = true; //Determine whether to chase here
 

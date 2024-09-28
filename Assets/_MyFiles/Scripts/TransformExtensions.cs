@@ -20,6 +20,9 @@ public static class TransformExtensions
     public static bool IsBlockedTo(this Transform transform, Transform otherTransform, Vector3 startOffSet,
         float checkDistance = Mathf.Infinity)
     {
+        //Physics.AllLayers)
+        //    Physics.Raycast(transform.position, directionToTarget, distanceToTarget, obstructionMask
+
         if (Physics.Raycast(transform.position + startOffSet, transform.GetDir(otherTransform),
                 out RaycastHit hit, checkDistance))
         {
