@@ -1,8 +1,7 @@
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
+
 [RequireComponent(typeof(VisionComponent))]
 [RequireComponent(typeof(HearingComponent))]
 [RequireComponent(typeof(RoamComponent))]
@@ -44,16 +43,9 @@ public class EnemyAI : MonoBehaviour
 
     //private bool _isPlayerLostCoolDown; //might removed
 
-    //  may add a timer to follow, even after player leaves visual field...
-    //  and a way for the enemy to face the player when lost.
-
-    public Transform GetTargetPos() { return targetPos; }
     private void Start()
     {
         StartCoroutine(FindPlayerRef());
-
-        /*tempCallPos = new GameObject("TempPos").transform; //for roaming. target may be set to this
-        tempCallPos.position = transform.position;*/
 
         _prevPosition = transform.position;
         _enemy_NavMeshAgent = GetComponent<NavMeshAgent>();
@@ -109,7 +101,6 @@ public class EnemyAI : MonoBehaviour
         }
         else
         {
-            //add a better wait time later perhaps?
             SetEnemyState(EEnemyState.roam);
         }
     }
@@ -120,38 +111,31 @@ public class EnemyAI : MonoBehaviour
         {
             case EEnemyState.wait:
                 ///do nothing
-                _hearingComponent.ClearAudibleLists();
+                _hearingComponent.ClearAudibleNoiseInfo();
                 targetPos = _roamingComponent.GetRoamPos();
                 targetPos.position = transform.position;
                 _waitTimer.ResetTimer();
-                //_waitTimer.SetRunTimer(true);
                 break;
             case EEnemyState.roam:
                 if (_roamingComponent)
                 {
                     targetPos = _roamingComponent.Roam(targetPos); ///Add wait functionality
+                    GoToTarget();
                 }
-                GoToTarget();
+                else
+                {
+                    SetEnemyState(EEnemyState.wait);
+                }
+                
                 break;
             case EEnemyState.curious:
                 ///swap target to an audible sound
-                
-                /*if (!_hearingComponent.GetIsAudibleNoisesPresent() || targetPos == _roamingComponent.GetRoamPos())
-                {
-                    targetPos = _hearingComponent.ChooseNoiseTarget();
-                    if (targetPos == null)
-                    {
-                        SetEnemyState(EEnemyState.wait);//may replace with a continue chase timer
-                    }
-                }*/
-                targetPos = _hearingComponent.ChooseNoiseTarget();
+                targetPos = _hearingComponent.GetHearingTarget();
                 InvestigateNoise();
                 if (targetPos == null)
                 {
-                    //SetEnemyState(EEnemyState.wait);//change when get time
                     return;
                 }
-                //Debug.Log($"~TargetPos : {targetPos.name}");
                 GoToTarget();
                 break;
             case EEnemyState.chase:
@@ -159,7 +143,7 @@ public class EnemyAI : MonoBehaviour
                 //  was seen as they hid. 
                 if (_hearingComponent.GetIsAudibleNoisesPresent())
                 {
-                    _hearingComponent.ClearAudibleLists(); //Might change later...
+                    _hearingComponent.ClearAudibleNoiseInfo();
                 }
                 ChasePlayer();
                 GoToTarget();
@@ -203,7 +187,7 @@ public class EnemyAI : MonoBehaviour
         }
         else 
         {
-            //targetPos.position = tempCallPos; ///Playerlost. returns to roaming after waiting
+            ///Playerlost. returns to roaming after waiting
             SetEnemyState(EEnemyState.wait);
         }
     }
@@ -227,7 +211,7 @@ public class EnemyAI : MonoBehaviour
         ///TargetPos is determined by hearing component.
         if (IsTargetAtStoppingDistance()) 
         {
-            _hearingComponent.ClearAudibleLists();
+            _hearingComponent.ClearAudibleNoiseInfo();
             NoiseComponent targetNoise = null;
             if (targetPos != null)
             {

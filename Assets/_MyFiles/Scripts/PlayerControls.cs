@@ -13,6 +13,7 @@ using System.Collections;
 [RequireComponent(typeof(TimerComponent))]
 public class PlayerControls : MonoBehaviour
 {
+    [SerializeField] UIManager _uIManager;
     [Header("Player Enum Info [READ ONLY]")]
     [SerializeField] private EEntityType entityType = EEntityType.Player;
     [SerializeField] private EPlayerState playerState; ///(Idle, Sneaking, Walking, Sprinting, Hiding)
@@ -78,8 +79,7 @@ public class PlayerControls : MonoBehaviour
         if (targetInteractible != null)
         {
             IInterActions interactionObj = targetInteractible.GetComponent<IInterActions>();
-            UIManager uIManager = GameManager.m_Instance.GetUIManager();
-            uIManager.SetInteractionText(interactionObj.GetInteractionMessage());
+            _uIManager.SetInteractionText(interactionObj.GetInteractionMessage());
         }
     }
     public void ToggleIsHiding()
@@ -101,6 +101,8 @@ public class PlayerControls : MonoBehaviour
     }
     private void Start()
     {
+         _uIManager = GameManager.m_Instance.GetUIManager();
+
         _playerInputActions = new PlayerInputActions();
         _playerInputActions.Player.Enable();
 
@@ -122,7 +124,6 @@ public class PlayerControls : MonoBehaviour
         bIsInteracting = false;
         bIsHiding = false;
 
-        _hearingComponent.SetCanDetectSelf(true);
         _hearingComponent.SetHearingThreshold(hearingThreshold);
     }
 
@@ -152,9 +153,8 @@ public class PlayerControls : MonoBehaviour
         Transform hidePos = targetInteractible.GetComponent<HidingInteraction>().GetHidePos();
         Transform startPos;
         Transform targetPos;
-        if (bIsHiding)
+        if (bIsHiding)  ///will change to lerp/slerp later.
         {
-            ///will change to lerp/slerp later.
             startPos = _prevHidePos;
             targetPos = hidePos;
         }
@@ -192,7 +192,6 @@ public class PlayerControls : MonoBehaviour
             _playerController.Move(Time.deltaTime * _playerVelocity);
         }
     }
-
     private void ProcessMovementType(Vector3 inputVector) 
     {
         if (inputVector.x == 0.0f && inputVector.y == 0.0f)
@@ -231,25 +230,24 @@ public class PlayerControls : MonoBehaviour
             _playerController.height = Mathf.Lerp(_playerController.height, heightChange, Time.deltaTime * sneakLerpSpeed);
         }
     }
-    private void ProcessNoisesHeard()
+    private void ProcessLook()
     {
-        if (_hearingComponent)
-        {///not using transform, but getting float values calculated for noisemeter
-            _hearingComponent.ChooseNoiseTarget();
-            _hearingComponent.UpdateNoiseMeter();//move reference completely to player.
+        Vector2 lookVector = _playerInputActions.Player.Look.ReadValue<Vector2>();
 
-            /*if (_timerComponent.IsTimerFinished()) ///1.0f second wait time
-            { 
-                _hearingComponent.ClearAudibleLists();
-                _timerComponent.ResetTimer();
-            }*/
-        }
+        _xRotation -= (lookVector.y * Time.deltaTime) * ySensitivity;
+        _xRotation = Mathf.Clamp(_xRotation, -80f, 80f);
+
+        playerCam.transform.localRotation = Quaternion.Euler(_xRotation, 0, 0);
+        transform.Rotate(Vector3.up * (Time.deltaTime * lookVector.x) * xSensitivity);
     }
     private void ProcessNoise() 
     {
-        ProcessNoisesHeard(); ///checking if there's audio and updating UI
-        ProcessNoiseType(); ///checking type and setting current multiplier
-        _noiseComponent.TriggerNoise();
+        ProcessNoiseType(); ///checking type and setting current multiplier        
+        UpdateNoiseMeter(); ///checking if there's audio and updating UI
+        if (_noiseComponent)
+        { 
+            _noiseComponent.TriggerNoise();
+        }
         if (!_noiseComponent || _noiseComponent.GetNoiseMultiplier() == _currentMultiplier)
         {
             return;
@@ -277,15 +275,13 @@ public class PlayerControls : MonoBehaviour
                 break;
         }
     }
-    private void ProcessLook()
+    private void UpdateNoiseMeter()
     {
-        Vector2 lookVector = _playerInputActions.Player.Look.ReadValue<Vector2>();
-
-        _xRotation -= (lookVector.y * Time.deltaTime) * ySensitivity;
-        _xRotation = Mathf.Clamp(_xRotation, -80f, 80f);
-        
-        playerCam.transform.localRotation = Quaternion.Euler(_xRotation, 0, 0);
-        transform.Rotate(Vector3.up * (Time.deltaTime * lookVector.x) * xSensitivity);
+        if (_hearingComponent && _uIManager)
+        {///not using transform, but getting float values calculated for noisemeter
+            float hearingTargetNoise = _hearingComponent.GetTargetNoiseCalculatedValue();
+            _uIManager.UpdateNoiseMeterUI(hearingTargetNoise);
+        }
     }
     public void Sprint(InputAction.CallbackContext context)
     {
