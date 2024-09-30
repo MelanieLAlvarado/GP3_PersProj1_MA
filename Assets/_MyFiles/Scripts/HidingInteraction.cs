@@ -37,8 +37,6 @@ public class HidingInteraction : MonoBehaviour, IInterActions
                 Debug.Log("HIDE HERE");
             }
             _player.ToggleIsHiding();
-            _player.SetIsHideLerp(true);
-
             GameManager.m_Instance.GetUIManager().SetInteractionText(GetInteractionMessage());
         }
     }

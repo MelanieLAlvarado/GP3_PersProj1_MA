@@ -132,10 +132,6 @@ public class EnemyAI : MonoBehaviour
                 ///swap target to an audible sound
                 targetPos = _hearingComponent.GetHearingTarget();
                 InvestigateNoise();
-                if (targetPos == null)
-                {
-                    return;
-                }
                 GoToTarget();
                 break;
             case EEnemyState.chase:
@@ -145,7 +141,7 @@ public class EnemyAI : MonoBehaviour
                 {
                     _hearingComponent.ClearAudibleNoiseInfo();
                 }
-                PlayerHiddenCheck();
+                //PlayerHiddenCheck();
                 ChasePlayer();
                 GoToTarget();
                 break;
@@ -162,6 +158,10 @@ public class EnemyAI : MonoBehaviour
     }
     private void GoToTarget() 
     {
+        if (targetPos == null)
+        {
+            return;
+        }
         _enemy_NavMeshAgent.destination = targetPos.transform.position;
         Vector3 currentMove = transform.position - _prevPosition;
         currentSpeed = currentMove.magnitude/Time.deltaTime;
@@ -176,14 +176,14 @@ public class EnemyAI : MonoBehaviour
             _enemy_NavMeshAgent.destination = targetPos.transform.position;
             if (IsTargetAtStoppingDistance())
             {
-                if (_visionComponent.GetCanSeeVisualTarget() && PlayerHiddenCheck())
+                /*if (_visionComponent.GetCanSeeVisualTarget() && PlayerHiddenCheck())
                 { 
                     PullPlayerFromHidingPlace();//<-- still needs to be programmed (WIP)
                 }
                 else if (!PlayerHiddenCheck())
                 {
                     //get player here!! (WIP)
-                }
+                }*/
             }
         }
         else 
@@ -192,7 +192,7 @@ public class EnemyAI : MonoBehaviour
             SetEnemyState(EEnemyState.wait);
         }
     }
-    private bool PlayerHiddenCheck() ///Shorthand way of checking if player is hidden
+    /*private bool PlayerHiddenCheck() ///Shorthand way of checking if player is hidden
     {
         //PlayerControls player = targetPos.GetComponent<PlayerControls>();
         PlayerControls player = playerRef.GetComponent<PlayerControls>();
@@ -201,12 +201,12 @@ public class EnemyAI : MonoBehaviour
             bool isPlayerHidden = player.GetPlayerState() == EPlayerState.hiding && player.GetIsHiding();
             if (_visionComponent.GetCanSeeVisualTarget()) 
             {
-                _visionComponent.SetCannotSeeCondition(!isPlayerHidden);
+                //_visionComponent.SetCannotSeeCondition(!isPlayerHidden);
             }
             return isPlayerHidden;
         }
         return false;
-    }
+    }*/
     private void PullPlayerFromHidingPlace() ///(WIP)
     {
         //include a way to decide to pull player out of hiding spots if the player

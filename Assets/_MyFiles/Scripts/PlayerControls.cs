@@ -68,7 +68,6 @@ public class PlayerControls : MonoBehaviour
     public EPlayerState GetPlayerState() { return playerState; }
     public GameObject GetTargetInteractible() { return targetInteractible; }
     public bool GetIsHiding() { return bIsHiding; }
-    public void SetIsHideLerp(bool stateToSet) { _bIsHideLerping = stateToSet;}
     public bool GetIsHideLerp() { return _bIsHideLerping; }
     public Transform GetPrevHidePos() { return _prevHidePos; }
     public void SetPrevHidePos(Transform transToSet) { _prevHidePos = transToSet; }
@@ -90,6 +89,7 @@ public class PlayerControls : MonoBehaviour
             return;
         }
         bIsHiding = !bIsHiding;
+        _bIsHideLerping = true;
         if (bIsHiding)
         {
             playerState = EPlayerState.hiding;
@@ -97,6 +97,10 @@ public class PlayerControls : MonoBehaviour
         else
         {
             playerState = EPlayerState.idle;
+        }
+        if (GetComponent<Stimuli>())
+        {
+            GetComponent<Stimuli>().SetIsChaseable(!bIsHiding); ///for sense detectiblity
         }
     }
     private void Start()
@@ -113,6 +117,8 @@ public class PlayerControls : MonoBehaviour
         _timerComponent = GetComponent<TimerComponent>();
 
         _timerComponent.SetTimerMax(1.0f);
+
+        GetComponent<Stimuli>().SetIsChaseable(true);
 
         _bIsSneaking = false;
         _bIsSprinting = false;

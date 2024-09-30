@@ -288,6 +288,9 @@ MonoBehaviour:
   forgetTime: 2
   visualRadius: 15
   visualAngle: 120
+  exceptionLayer:
+    serializedVersion: 2
+    m_Bits: 64
   bCanSeeVisualTarget: 0
 --- !u!114 &-9021636143937447779
 MonoBehaviour:

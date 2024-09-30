@@ -10,25 +10,12 @@ public abstract class Sense : MonoBehaviour
 
     private static HashSet<Stimuli> _registeredStimuliSet = new HashSet<Stimuli>();
     private HashSet<Stimuli> _currentSensibleStimuliSet = new HashSet<Stimuli>();
-
     private Dictionary<Stimuli, Coroutine> _forgettingCoroutines = new Dictionary<Stimuli, Coroutine>();
 
-    public HashSet<Stimuli> GetCurrentSensibleStimuliSet() 
-    {
-        return _currentSensibleStimuliSet; 
-    }
+    public HashSet<Stimuli> GetCurrentSensibleStimuliSet() { return _currentSensibleStimuliSet; }
     public bool GetCurrentSensibleStimuliSetIsntEmpty() { return _currentSensibleStimuliSet.Count > 0; }
-    public static void RegisterStimuli(Stimuli stimuli) 
-    {
-        _registeredStimuliSet.Add(stimuli);
-        //Debug.Log($"registered stim added. stim count: {_registeredStimuliSet.Count}");
-    }
-    public static void UnRegisterStimuli(Stimuli stimuli) 
-    {
-        _registeredStimuliSet.Remove(stimuli);
-        //Debug.Log($"registered stim removed. stim count: {_registeredStimuliSet.Count}");
-    }
-
+    public static void RegisterStimuli(Stimuli stimuli) { _registeredStimuliSet.Add(stimuli); }
+    public static void UnRegisterStimuli(Stimuli stimuli) { _registeredStimuliSet.Remove(stimuli); }
     protected abstract bool IsStimuliSensible(Stimuli stimuli);
 
     private void FixedUpdate()
@@ -83,8 +70,5 @@ public abstract class Sense : MonoBehaviour
             OnDrawDebug();
         }
     }
-    protected virtual void OnDrawDebug() 
-    {
-        ///override in child class
-    }
+    protected virtual void OnDrawDebug() { /*override in child class*/ }
 }

@@ -7,22 +7,28 @@ public class VisionComponent : Sense
     [SerializeField] private float visualRadius;
     [Range(0, 360)][SerializeField] private float visualAngle;
 
-    private bool _bCannotSeeCondition = true;
-    [SerializeField] private bool bCanSeeVisualTarget;
+    [SerializeField] private LayerMask exceptionLayer;
+
+    [SerializeField] private bool bCanSeeVisualTarget = false;
     private GameObject _visualTarget = null;
 
     public bool GetCanSeeVisualTarget() { return bCanSeeVisualTarget; }
-    public bool GetCannotSeeCondition() { return _bCannotSeeCondition; }
-    public void SetCannotSeeCondition(bool stateToSet) { _bCannotSeeCondition = stateToSet; }
+
+    private void Start()
+    {
+        Debug.Log($"Initial Layer Type: {exceptionLayer.value}");
+    }
 
     protected override bool IsStimuliSensible(Stimuli stimuli)
     {
-        if (!stimuli.GetIsVisuallyDetectable()) ///stimuli cannot be chased/seen
+        if (stimuli.GetIsVisuallyDetectable() == false) ///stimuli cannot be chased/seen
         {
-            bCanSeeVisualTarget = false;
-            _visualTarget = null;
+            /*bCanSeeVisualTarget = false;
+            _visualTarget = null;*/
             return false;
         }
+        Debug.Log($"{stimuli.gameObject.name}'s IsChaseable == {stimuli.GetIsChaseable()}");
+        Debug.Log($"{stimuli.gameObject.name}'s CanSeeVisualTarget == {bCanSeeVisualTarget}");
         if (!transform.InRangeOf(stimuli.transform, visualRadius))
         {
             bCanSeeVisualTarget = false;
@@ -36,18 +42,43 @@ public class VisionComponent : Sense
             return false;
         }
 
-        if (transform.IsBlockedTo(stimuli.transform, Vector3.up, visualRadius))
+        if (transform.IsBlockedTo(stimuli.transform, Vector3.up, visualRadius/*, exceptionLayer.value*/))
         {
-            //check IsHiding and CanSeeVisualTarget(! too)
-            //if !IsHiding, then continue and make it false 100%
-            bCanSeeVisualTarget = false;
-            _visualTarget = null;
-            return false;
+            Debug.Log("IS PASSING BLOCK CHECK");
+            if (stimuli.GetIsChaseable())
+            {
+                bCanSeeVisualTarget = true;
+                _visualTarget = stimuli.gameObject;
+                Debug.Log("Flag2 ++ canSeeVisTarget");
+                return true;
+            }
+            /*else
+            {
+                bCanSeeVisualTarget = false;
+            }*/
+            if (bCanSeeVisualTarget == false)
+            {
+                Debug.Log("Flag1 ++ can NOT SeeVisTarget");
+                _visualTarget = null;
+                return false;
+            }
         }
+        Debug.Log("Flag3 ++ nothing Obscuring!");
+
+        /*targetPos = visualTarget;
+        if (!PlayerHiddenCheck())
+        {
+            bCanSeePlayer = true;
+        }
+        if (bCanSeePlayer == false)
+        {
+            return false; ///player hid before coming inside FOV
+        }
+        return true; ///if the visual target within the angle, range, and not obtructed: then chase*/
 
         Debug.Log($"CAN SEE {stimuli.gameObject.name}");
         bCanSeeVisualTarget = true; //Determine whether to chase here
-
+        //stimuli.SetIsChaseable(true);
         _visualTarget = stimuli.gameObject;
         return true;
     }
