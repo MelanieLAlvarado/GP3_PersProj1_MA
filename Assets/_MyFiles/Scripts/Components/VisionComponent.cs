@@ -4,81 +4,51 @@ using UnityEngine;
 public class VisionComponent : Sense
 {
     [Header("Field of View Options")]
+    [SerializeField] private float closeRadius = 1.5f;
     [SerializeField] private float visualRadius;
     [Range(0, 360)][SerializeField] private float visualAngle;
 
     [SerializeField] private LayerMask exceptionLayer;
 
-    [SerializeField] private bool bCanSeeVisualTarget = false;
+    private bool _bCanSeeVisualTarget = false;
     private GameObject _visualTarget = null;
 
-    public bool GetCanSeeVisualTarget() { return bCanSeeVisualTarget; }
-
-    private void Start()
-    {
-        Debug.Log($"Initial Layer Type: {exceptionLayer.value}");
-    }
-
+    public bool GetCanSeeVisualTarget() { return _bCanSeeVisualTarget; } 
     protected override bool IsStimuliSensible(Stimuli stimuli)
     {
         if (stimuli.GetIsVisuallyDetectable() == false) ///stimuli cannot be chased/seen
         {
-            /*bCanSeeVisualTarget = false;
-            _visualTarget = null;*/
             return false;
         }
-        Debug.Log($"{stimuli.gameObject.name}'s IsChaseable == {stimuli.GetIsChaseable()}");
-        Debug.Log($"{stimuli.gameObject.name}'s CanSeeVisualTarget == {bCanSeeVisualTarget}");
         if (!transform.InRangeOf(stimuli.transform, visualRadius))
         {
-            bCanSeeVisualTarget = false;
+            _bCanSeeVisualTarget = false;
             _visualTarget = null;
             return false;
         }
-        if (!transform.InAngleOf(stimuli.transform, visualAngle/2))
+        if (!transform.InAngleOf(stimuli.transform, visualAngle/2) && !transform.InRangeOf(stimuli.transform, closeRadius))
         {
-            bCanSeeVisualTarget = false;
+            _bCanSeeVisualTarget = false;
             _visualTarget = null;
             return false;
         }
 
-        if (transform.IsBlockedTo(stimuli.transform, Vector3.up, visualRadius/*, exceptionLayer.value*/))
+        RaycastHit hitPoint;
+        if (transform.IsBlockedTo(stimuli.transform, Vector3.up + Vector3.forward, out hitPoint, visualRadius))
         {
-            Debug.Log("IS PASSING BLOCK CHECK");
-            if (stimuli.GetIsChaseable())
+            Debug.Log($"{stimuli.gameObject} IS PASSING BLOCK CHECK");
+            if (transform.IsHitExceptionLayer(hitPoint, exceptionLayer)) 
             {
-                bCanSeeVisualTarget = true;
-                _visualTarget = stimuli.gameObject;
-                Debug.Log("Flag2 ++ canSeeVisTarget");
-                return true;
+                Debug.Log($"Exception Layer!");
+                return CanSeeStimuli(stimuli);
             }
-            /*else
-            {
-                bCanSeeVisualTarget = false;
-            }*/
-            if (bCanSeeVisualTarget == false)
-            {
-                Debug.Log("Flag1 ++ can NOT SeeVisTarget");
-                _visualTarget = null;
-                return false;
-            }
+            return false;
         }
-        Debug.Log("Flag3 ++ nothing Obscuring!");
 
-        /*targetPos = visualTarget;
-        if (!PlayerHiddenCheck())
-        {
-            bCanSeePlayer = true;
-        }
-        if (bCanSeePlayer == false)
-        {
-            return false; ///player hid before coming inside FOV
-        }
-        return true; ///if the visual target within the angle, range, and not obtructed: then chase*/
 
-        Debug.Log($"CAN SEE {stimuli.gameObject.name}");
-        bCanSeeVisualTarget = true; //Determine whether to chase here
-        //stimuli.SetIsChaseable(true);
+        Debug.Log($"Flag3 ++ nothing Obscuring {stimuli.gameObject.name}!");
+
+        _bCanSeeVisualTarget = true;
         _visualTarget = stimuli.gameObject;
         return true;
     }
@@ -115,11 +85,27 @@ public class VisionComponent : Sense
     bCanSeePlayer = false;
     return false; /// There's nothing in the sphere as a visual target mask or in the angle of the FOV
 }*/
-
+    private bool CanSeeStimuli(Stimuli stimuli) ///determines if the stimuli is hidden
+    {
+        if (stimuli.GetIsChaseable() == true)
+        {
+            _bCanSeeVisualTarget = true;
+            _visualTarget = stimuli.gameObject;
+            return true;
+        }
+        if (_bCanSeeVisualTarget == false)
+        {
+            _visualTarget = null;
+            return false;
+        }
+        return _bCanSeeVisualTarget;
+    }
     protected override void OnDrawDebug()
     {
+        Gizmos.DrawWireSphere(transform.position + Vector3.up, closeRadius);
+
         Gizmos.DrawWireSphere(transform.position + Vector3.up, visualRadius);
-        
+
         Vector3 lineLeft = Quaternion.AngleAxis(visualAngle/2, Vector3.up) * transform.forward;
         Vector3 lineRight = Quaternion.AngleAxis(-visualAngle/2, Vector3.up) * transform.forward;
 

@@ -34,7 +34,6 @@ public class HidingInteraction : MonoBehaviour, IInterActions
             {
                 //save player position prior to hiding (WIP)
                 _player.SetPrevHidePos(_player.transform);
-                Debug.Log("HIDE HERE");
             }
             _player.ToggleIsHiding();
             GameManager.m_Instance.GetUIManager().SetInteractionText(GetInteractionMessage());

@@ -286,6 +286,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   bDrawDebug: 1
   forgetTime: 2
+  extraRadius: 2
   visualRadius: 15
   visualAngle: 120
   exceptionLayer:

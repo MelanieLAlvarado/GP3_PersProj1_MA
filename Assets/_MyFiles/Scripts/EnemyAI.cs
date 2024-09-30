@@ -18,9 +18,6 @@ public class EnemyAI : MonoBehaviour
     [Header("Roam/WaitTime Options")]
     [Range(0f, 10f)][SerializeField] private float waitTime = 1.5f;
 
-    [Header("Manager Info [Read Only]")]
-    [SerializeField] EnemyManager enemyManager;
-
     [Header("Position Info [Read Only]")]
     [SerializeField] GameObject playerRef;
     [SerializeField] private Transform targetPos; ///position that holds other positions
@@ -28,20 +25,7 @@ public class EnemyAI : MonoBehaviour
     [Header("Speed Options")] 
     private NavMeshAgent _enemy_NavMeshAgent;
     private Vector3 _prevPosition;
-    [SerializeField] private float currentSpeed; //might make changeable later
-
-    ///Might move to its own script... Vision Component
-
-    [Header("Field of View Options")]
-    /*[SerializeField] private float visualRadius;
-    [Range(0, 360)][SerializeField] private float visualAngle;
-
-    [SerializeField] private LayerMask visualTargetMask;
-    [SerializeField] private LayerMask obstructionMask;
-    [SerializeField] [Range(0, 30)] private float playerLostCooldown;*/
-    [SerializeField] private bool bCanSeePlayer;
-
-    //private bool _isPlayerLostCoolDown; //might removed
+    private float _currentSpeed;
 
     private void Start()
     {
@@ -90,7 +74,6 @@ public class EnemyAI : MonoBehaviour
             ///Waiting based on timer component (waitTimer)
             return;
         }
-        //timer for when player is lost?
         if (_visionComponent.GetCurrentSensibleStimuliSetIsntEmpty())
         {
             SetEnemyState(EEnemyState.chase);
@@ -126,7 +109,6 @@ public class EnemyAI : MonoBehaviour
                 {
                     SetEnemyState(EEnemyState.wait);
                 }
-                
                 break;
             case EEnemyState.curious:
                 ///swap target to an audible sound
@@ -135,13 +117,10 @@ public class EnemyAI : MonoBehaviour
                 GoToTarget();
                 break;
             case EEnemyState.chase:
-                //  and will include a way to decide to pull player out of hiding spots if the player
-                //  was seen as they hid. 
                 if (_hearingComponent.GetIsAudibleNoisesPresent())
                 {
                     _hearingComponent.ClearAudibleNoiseInfo();
                 }
-                //PlayerHiddenCheck();
                 ChasePlayer();
                 GoToTarget();
                 break;
@@ -164,7 +143,7 @@ public class EnemyAI : MonoBehaviour
         }
         _enemy_NavMeshAgent.destination = targetPos.transform.position;
         Vector3 currentMove = transform.position - _prevPosition;
-        currentSpeed = currentMove.magnitude/Time.deltaTime;
+        _currentSpeed = currentMove.magnitude/Time.deltaTime;
         _prevPosition = transform.position;
     }
     private void ChasePlayer() 
@@ -176,39 +155,27 @@ public class EnemyAI : MonoBehaviour
             _enemy_NavMeshAgent.destination = targetPos.transform.position;
             if (IsTargetAtStoppingDistance())
             {
-                /*if (_visionComponent.GetCanSeeVisualTarget() && PlayerHiddenCheck())
+                Stimuli targetStimuli = targetPos.GetComponent<Stimuli>();
+                if (_visionComponent.GetCanSeeVisualTarget() && !targetStimuli.GetIsChaseable())
                 { 
                     PullPlayerFromHidingPlace();//<-- still needs to be programmed (WIP)
                 }
-                else if (!PlayerHiddenCheck())
+                else if (targetStimuli.GetIsChaseable() && targetPos == playerRef.transform)
                 {
                     //get player here!! (WIP)
-                }*/
+                    Debug.Log("Player caught!!");
+                }
             }
         }
-        else 
+        /*else 
         {
             ///Playerlost. returns to roaming after waiting
             SetEnemyState(EEnemyState.wait);
-        }
+        }*/
     }
-    /*private bool PlayerHiddenCheck() ///Shorthand way of checking if player is hidden
-    {
-        //PlayerControls player = targetPos.GetComponent<PlayerControls>();
-        PlayerControls player = playerRef.GetComponent<PlayerControls>();
-        if (player) 
-        {
-            bool isPlayerHidden = player.GetPlayerState() == EPlayerState.hiding && player.GetIsHiding();
-            if (_visionComponent.GetCanSeeVisualTarget()) 
-            {
-                //_visionComponent.SetCannotSeeCondition(!isPlayerHidden);
-            }
-            return isPlayerHidden;
-        }
-        return false;
-    }*/
     private void PullPlayerFromHidingPlace() ///(WIP)
     {
+        Debug.Log("Player Pull out!!!");
         //include a way to decide to pull player out of hiding spots if the player
         //  was seen as they hid. 
     }

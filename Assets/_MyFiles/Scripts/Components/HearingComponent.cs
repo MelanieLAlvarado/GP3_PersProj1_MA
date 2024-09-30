@@ -7,7 +7,6 @@ using UnityEngine.AI;
 
 public class HearingComponent : Sense
 {
-    private UIManager _uIManager;
     [Header("Hearing Options")]
     [Range(1.0f, 50.0f)][SerializeField] float hearingRange = 30.0f;
     [Range(0f, 100f)][SerializeField] float hearingThreshold = 20.0f;
@@ -16,10 +15,10 @@ public class HearingComponent : Sense
     [Header("Hearing List Info [READ ONLY]")]
     private Dictionary<Stimuli, float> _audibleNoiseDict = new Dictionary<Stimuli, float>();
 
-    private float targetNoiseCalculatedValue = 0.0f;
+    private float _targetNoiseCalculatedValue = 0.0f;
     private Transform _hearingTarget;
 
-    public float GetTargetNoiseCalculatedValue() { return targetNoiseCalculatedValue;  }
+    public float GetTargetNoiseCalculatedValue() { return _targetNoiseCalculatedValue;  }
     public bool GetIsAudibleNoisesPresent() ///usually starts the hearing process in other scripts
     {
         return _audibleNoiseDict.Count > 0;
@@ -39,7 +38,7 @@ public class HearingComponent : Sense
     public void ClearAudibleNoiseInfo() ///reseting the sounds heard
     {
         _hearingTarget = null;
-        targetNoiseCalculatedValue = 0.0f;
+        _targetNoiseCalculatedValue = 0.0f;
         _bAreNoisesInaudible = true;
         _audibleNoiseDict.Clear();
     }
@@ -53,8 +52,6 @@ public class HearingComponent : Sense
         {
             UpdateAudibleStimuliDict(stimuli);
         }
-        /*Debug.Log($"{this.gameObject.name} -- audible noise dictionary: {_audibleNoiseDict.Count}");
-        Debug.Log($"{this.gameObject.name} -- current sensible stimuli : {GetCurrentSensibleStimuliSet().Count}");*/
         SelectHearingTarget();
     }
     private void UpdateAudibleStimuliDict(Stimuli stimuli)
@@ -123,7 +120,7 @@ public class HearingComponent : Sense
             float loudestNoiseVal = _audibleNoiseDict[loudestStimuli];
             if (loudestNoiseVal > hearingThreshold)
             {
-                targetNoiseCalculatedValue = loudestNoiseVal;
+                _targetNoiseCalculatedValue = loudestNoiseVal;
                 _hearingTarget = loudestStimuli.transform;
                 _bAreNoisesInaudible = false;
                 return;
@@ -133,7 +130,7 @@ public class HearingComponent : Sense
         {
             _bAreNoisesInaudible = true;
             _hearingTarget = null;
-            targetNoiseCalculatedValue = 0.0f;
+            _targetNoiseCalculatedValue = 0.0f;
         }
     }
     
@@ -143,7 +140,7 @@ public class HearingComponent : Sense
         Gizmos.DrawWireSphere(transform.position, hearingRange);
         if (_hearingTarget)
         {
-            if (targetNoiseCalculatedValue > hearingThreshold)
+            if (_targetNoiseCalculatedValue > hearingThreshold)
             {
                 Debug.DrawRay(_hearingTarget.position, Vector3.up, UnityEngine.Color.yellow, 0.1f);
             }
