@@ -158,12 +158,11 @@ public class EnemyAI : MonoBehaviour
                 Stimuli targetStimuli = targetPos.GetComponent<Stimuli>();
                 if (_visionComponent.GetCanSeeVisualTarget() && !targetStimuli.GetIsChaseable())
                 { 
-                    PullPlayerFromHidingPlace();//<-- still needs to be programmed (WIP)
+                    PullPlayerFromHidingPlace();
                 }
                 else if (targetStimuli.GetIsChaseable() && targetPos == playerRef.transform)
                 {
-                    //get player here!! (WIP)
-                    Debug.Log("Player caught!!");
+                    Attack();
                 }
             }
         }
@@ -176,8 +175,21 @@ public class EnemyAI : MonoBehaviour
     private void PullPlayerFromHidingPlace() ///(WIP)
     {
         Debug.Log("Player Pull out!!!");
-        //include a way to decide to pull player out of hiding spots if the player
-        //  was seen as they hid. 
+        PlayerControls playerTargetPos = targetPos.GetComponent<PlayerControls>();
+        
+        if (!playerTargetPos) { return; }
+
+        if (playerTargetPos.GetIsHiding() && playerTargetPos.GetIsDead() == false)
+        {
+            Debug.Log($"CAught Player!");
+            playerTargetPos.SetIsDead(true);
+            playerTargetPos.ToggleIsHiding();
+        }
+        Attack();
+    }
+    private void Attack() 
+    {
+        Debug.Log("Attack!");
     }
     private void InvestigateNoise()
     {

@@ -38,6 +38,8 @@ public class PlayerControls : MonoBehaviour
     private float _gravity = -9.8f;
     private bool _bIsDefaultMovement = true;
 
+    private bool _isDead = false;
+
     [Header("Camera Options")]
     [SerializeField] private Camera playerCam;
 
@@ -67,6 +69,8 @@ public class PlayerControls : MonoBehaviour
     public EEntityType GetEntityType() { return entityType; }
     public EPlayerState GetPlayerState() { return playerState; }
     public GameObject GetTargetInteractible() { return targetInteractible; }
+    public bool GetIsDead() { return _isDead; }
+    public void SetIsDead(bool stateToSet) {  _isDead = stateToSet; }
     public bool GetIsHiding() { return bIsHiding; }
     public bool GetIsHideLerp() { return _bIsHideLerping; }
     public Transform GetPrevHidePos() { return _prevHidePos; }
@@ -135,6 +139,10 @@ public class PlayerControls : MonoBehaviour
 
     private void FixedUpdate()
     {
+        /*if (_prevHidePos)
+        { 
+            Debug.Log($"prev hide pos: { _prevHidePos.position}");
+        }*/
         ProcessNoise();
         if (_bIsHideLerping) 
         {
