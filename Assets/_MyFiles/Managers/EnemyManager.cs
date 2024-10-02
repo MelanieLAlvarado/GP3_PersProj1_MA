@@ -11,6 +11,10 @@ public class EnemyManager : MonoBehaviour
     private Transform _enemySpawnLoc; ///<-- recieved from GameManager (may change)
     private GameObject _enemyPrefab;  ///<-- recieved from GameManager (may change)
     [SerializeField] private int enemyAmountToSpawn = 1;
+    public void SetEnemyCount(int enemyCountToSet) 
+    {
+        enemyAmountToSpawn = enemyCountToSet;
+    }
     private void Start()
     {
         _enemySpawnLoc = GameManager.m_Instance.GetEnemySpawnLoc();
@@ -37,7 +41,8 @@ public class EnemyManager : MonoBehaviour
             GameObject enemy;
             if (_enemySpawnLoc != null)
             {
-                enemy = Instantiate(_enemyPrefab, _enemySpawnLoc.position, _enemySpawnLoc.rotation);
+                Vector3 offset = new Vector3(_enemySpawnLoc.position.x + i, 0, 0);
+                enemy = Instantiate(_enemyPrefab, _enemySpawnLoc.position + offset, _enemySpawnLoc.rotation);
             }
             else 
             { 

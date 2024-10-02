@@ -13,6 +13,8 @@ public class INoiseInteraction : MonoBehaviour, IInterActions
         SphereCollider detectionCollider = gameObject.AddComponent<SphereCollider>();
         detectionCollider.isTrigger = true;
         detectionCollider.radius = detectionRange;
+
+        _noiseComponent = this.GetComponent<NoiseComponent>();
     }
     public EEntityType GetEntityType()
     {
@@ -24,14 +26,11 @@ public class INoiseInteraction : MonoBehaviour, IInterActions
     }
     public void OnInteraction()
     {
-        if (_player)
+        if (_player && _noiseComponent)
         {
-            ///calling enemy
-            if (_noiseComponent = this.GetComponent<NoiseComponent>())
-            {
-                Debug.Log("NOISE HERE");
-                _noiseComponent.TriggerNoise();
-            }
+            ///triggering noise component
+            _noiseComponent.TriggerNoise();
+            _player.GetComponent<HearingComponent>().BeginRemoveNoiseDelay(this.gameObject);
         }
     }
     private void OnTriggerEnter(Collider other)
@@ -39,7 +38,6 @@ public class INoiseInteraction : MonoBehaviour, IInterActions
         _player = other.GetComponent<PlayerControls>();
         if (_player && _player.GetEntityType() == EEntityType.Player)
         {
-            //Debug.Log("near noisemaker");
             _player.SetTargetInteractible(this.gameObject);
         }
     }

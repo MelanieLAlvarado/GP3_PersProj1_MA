@@ -44,7 +44,7 @@ public class RoamComponent : MonoBehaviour
         if (targetPos != null)
         {
             targetPos = _roamPos;
-            targetPos.position = AtRoamPositionCheck(targetPos);
+            targetPos.position = AtRoamPositionCheck(_roamPos);
         }
         else
         {

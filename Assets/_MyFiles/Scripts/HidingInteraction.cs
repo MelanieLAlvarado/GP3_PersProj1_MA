@@ -4,8 +4,7 @@ using UnityEngine;
 public class HidingInteraction : MonoBehaviour, IInterActions
 {
     PlayerControls _player;
-    [SerializeField] private Transform hidePos;
-    Transform _playerLastPos; //will used for remembering the player's location before hiding
+    [SerializeField] private Transform hidePos;     ///Where the player will get transported to when hiding
     [SerializeField][Range(0, 5)] private float detectionRange = 2f; ///Edit sphere collider size on start
     private void Start()
     {
@@ -13,7 +12,7 @@ public class HidingInteraction : MonoBehaviour, IInterActions
         detectionCollider.isTrigger = true;
         detectionCollider.radius = detectionRange;
     }
-    public Transform GetHidePos() { return hidePos; } //(WIP)
+    public Transform GetHidePos() { return hidePos; } 
     public EEntityType GetEntityType()
     {
         return EEntityType.HidingSpace;
@@ -30,11 +29,6 @@ public class HidingInteraction : MonoBehaviour, IInterActions
     {
         if (_player)
         {
-            if (_player.GetIsHideLerp() == false && !_player.GetIsHiding())
-            {
-                //save player position prior to hiding (WIP)
-                //_player.SetPrevHidePos(_player.transform);
-            }
             _player.ToggleIsHiding();
             GameManager.m_Instance.GetUIManager().SetInteractionText(GetInteractionMessage());
         }

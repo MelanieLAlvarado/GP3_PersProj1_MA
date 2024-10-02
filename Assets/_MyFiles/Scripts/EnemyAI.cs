@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
@@ -19,13 +20,17 @@ public class EnemyAI : MonoBehaviour
     [Range(0f, 10f)][SerializeField] private float waitTime = 1.5f;
 
     [Header("Position Info [Read Only]")]
-    [SerializeField] GameObject playerRef;
     [SerializeField] private Transform targetPos; ///position that holds other positions
 
     [Header("Speed Options")] 
     private NavMeshAgent _enemy_NavMeshAgent;
     private Vector3 _prevPosition;
-    private float _currentSpeed;
+    [SerializeField] private float _currentSpeed;
+
+    [Header("Attack Options")]
+    [SerializeField] private Transform attackPoint;
+    [SerializeField] private float attackRange = 0.5f;
+
 
     public EEnemyState GetEnemyState() { return enemyState; }
     public bool IsTargetPlayer() 
@@ -39,8 +44,6 @@ public class EnemyAI : MonoBehaviour
 
     private void Start()
     {
-        StartCoroutine(FindPlayerRef());
-
         _prevPosition = transform.position;
         _enemy_NavMeshAgent = GetComponent<NavMeshAgent>();
 
@@ -48,7 +51,6 @@ public class EnemyAI : MonoBehaviour
         _hearingComponent = GetComponent<HearingComponent>();
         _roamingComponent = GetComponent<RoamComponent>();
 
-        //Timer to be moved out
         _waitTimer = GetComponents<TimerComponent>()[0];
         _waitTimer.SetTimerMax(waitTime);
         _waitTimer.ResetTimer();
@@ -68,15 +70,6 @@ public class EnemyAI : MonoBehaviour
     {
         ProcessEnemyAI();
     }
-    private IEnumerator FindPlayerRef()
-    {
-        yield return new WaitForSeconds(0.5f);
-        if (!playerRef && GameManager.m_Instance.GetPlayer() != null)
-        {
-            playerRef = GameManager.m_Instance.GetPlayer();
-            StopCoroutine(FindPlayerRef());
-        }
-    }
     private void ProcessEnemyAI() ///checks conditions and sets enemy state
     {
         if (enemyState == EEnemyState.wait && !_waitTimer.IsTimerFinished())
@@ -84,11 +77,11 @@ public class EnemyAI : MonoBehaviour
             ///Waiting based on timer component (waitTimer)
             return;
         }
-        if (_visionComponent.GetCurrentSensibleStimuliSetIsntEmpty())
+        if (_visionComponent && _visionComponent.GetCurrentSensibleStimuliSetIsntEmpty())
         {
             SetEnemyState(EEnemyState.chase);
         }
-        else if (_hearingComponent.GetIsAudibleNoisesPresent())
+        else if (_hearingComponent && _hearingComponent.GetIsAudibleNoisesPresent())
         {
             SetEnemyState(EEnemyState.curious);
         }
@@ -104,8 +97,11 @@ public class EnemyAI : MonoBehaviour
         {
             case EEnemyState.wait:
                 ///do nothing
-                _hearingComponent.ClearAudibleNoiseInfo();
-                targetPos = _roamingComponent.GetRoamPos();
+                if (_hearingComponent)
+                { 
+                    _hearingComponent.ClearAudibleNoiseInfo();
+                }
+                targetPos = this.transform;
                 targetPos.position = transform.position;
                 _waitTimer.ResetTimer();
                 break;
@@ -131,7 +127,8 @@ public class EnemyAI : MonoBehaviour
                 {
                     _hearingComponent.ClearAudibleNoiseInfo();
                 }
-                ChasePlayer();
+                targetPos = _visionComponent.GetVisualTarget().transform;
+                ChaseVisual();
                 GoToTarget();
                 break;
         }
@@ -147,11 +144,10 @@ public class EnemyAI : MonoBehaviour
     }
     private void GoToTarget() 
     {
-        if (targetPos == null)
-        {
-            return;
+        if (targetPos)
+        { 
+            _enemy_NavMeshAgent.destination = targetPos.transform.position;
         }
-        _enemy_NavMeshAgent.destination = targetPos.transform.position;
         Vector3 currentMove = transform.position - _prevPosition;
         _currentSpeed = currentMove.magnitude/Time.deltaTime;
         _prevPosition = transform.position;
@@ -162,24 +158,22 @@ public class EnemyAI : MonoBehaviour
             SetEnemyState(EEnemyState.wait);
         }
     }
-    private void ChasePlayer() 
+    private void ChaseVisual() 
     {
-        if (targetPos != null && playerRef)
+        if (targetPos == null) { return; }
+
+
+        if (IsTargetAtStoppingDistance())
         {
-            Debug.Log("Following Player!...");
-            targetPos = playerRef.transform;
-            _enemy_NavMeshAgent.destination = targetPos.transform.position;
-            if (IsTargetAtStoppingDistance())
+            Stimuli targetStimuli = targetPos.GetComponent<Stimuli>();
+            if (_visionComponent.GetCanSeeVisualTarget() && !targetStimuli.GetIsChaseable())
             {
-                Stimuli targetStimuli = targetPos.GetComponent<Stimuli>();
-                if (_visionComponent.GetCanSeeVisualTarget() && !targetStimuli.GetIsChaseable())
-                { 
-                    PullPlayerFromHidingPlace();
-                }
-                else if (targetStimuli.GetIsChaseable() && targetPos == playerRef.transform)
-                {
-                    Attack();
-                }
+                PullPlayerFromHidingPlace();
+            }
+            else if (IsInAttackRange())
+            {
+                Attack();
+                //SetEnemyState(EEnemyState.wait);
             }
         }
         /*else 
@@ -191,25 +185,47 @@ public class EnemyAI : MonoBehaviour
     private void PullPlayerFromHidingPlace() ///(WIP)
     {
         Debug.Log("Player Pull out!!!");
-        PlayerControls playerTargetPos = targetPos.GetComponent<PlayerControls>();
+        PlayerControls player = targetPos.GetComponent<PlayerControls>();
         
-        if (!playerTargetPos) { return; }
+        if (!player) 
+        {
+            SetEnemyState(EEnemyState.wait);
+            return; 
+        }
 
-        if (playerTargetPos.GetIsHiding() && playerTargetPos.GetIsDead() == false)
+        if (player.GetIsHiding() && player.GetIsDead() == false)
         {
             Debug.Log($"CAught Player!");
-            playerTargetPos.SetIsDead(true);
-            playerTargetPos.ToggleIsHiding();//Interact with hiding place?
+            IInterActions hidingInteraction = player.GetTargetInteractible().GetComponent<IInterActions>();
+            hidingInteraction.OnInteraction();
         }
-        Attack();
+    }
+
+    private bool IsInAttackRange()
+    {
+        Collider[] hitTargets = Physics.OverlapSphere(attackPoint.position, attackRange);
+        foreach (Collider hitTarget in hitTargets) 
+        {
+            if (hitTarget.gameObject == targetPos.gameObject)
+            { 
+                return true;
+            }
+        }
+        return false;
     }
     private void Attack() 
     {
-        Debug.Log("Attack!");
+        if (!targetPos) { return; }
+        PlayerControls player = targetPos.GetComponent<PlayerControls>();
+        if (player && !player.GetIsHideLerp() && player.GetIsDead() == false)
+        {
+            Debug.Log("Attack!");
+
+            player.SetIsDead(true);
+        }
     }
     private void InvestigateNoise()
     {
-        Debug.Log("Investigating noise...");
         ///TargetPos is determined by hearing component.
         if (IsTargetAtStoppingDistance()) 
         {
@@ -224,7 +240,14 @@ public class EnemyAI : MonoBehaviour
                 targetNoise.SetIsTriggered(false);
                 _hearingComponent.RemoveFromAudibleNoiseDict(targetPos.gameObject);
             }
-            SetEnemyState(EEnemyState.wait);
+        }
+    }
+    public void OnDrawGizmos()
+    {
+        Gizmos.color = Color.black;
+        if (attackPoint)
+        { 
+            Gizmos.DrawWireSphere(attackPoint.position, attackRange);
         }
     }
 }

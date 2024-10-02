@@ -1,4 +1,5 @@
 using System.Drawing;
+using System.Linq;
 using UnityEngine;
 
 public class VisionComponent : Sense
@@ -11,9 +12,10 @@ public class VisionComponent : Sense
     [SerializeField] private LayerMask exceptionLayer;
 
     private bool _bCanSeeVisualTarget = false;
-    private GameObject _visualTarget = null;
+    private GameObject _visualTarget = null;///debug purposes
 
     public bool GetCanSeeVisualTarget() { return _bCanSeeVisualTarget; } 
+    public GameObject GetVisualTarget() { return _visualTarget; }
     protected override bool IsStimuliSensible(Stimuli stimuli)
     {
         if (stimuli.GetIsVisuallyDetectable() == false) ///stimuli cannot be chased/seen
@@ -83,7 +85,10 @@ public class VisionComponent : Sense
         if (stimuli.GetIsChaseable() == true)
         {
             _bCanSeeVisualTarget = true;
-            _visualTarget = stimuli.gameObject;
+            if (_visualTarget == null)
+            { 
+                _visualTarget = stimuli.gameObject;
+            }
             return true;
         }
         if (_bCanSeeVisualTarget == false)

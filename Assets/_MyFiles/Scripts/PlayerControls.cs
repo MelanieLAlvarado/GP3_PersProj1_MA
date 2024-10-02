@@ -10,7 +10,6 @@ using System.Collections;
 ///Components for project
 [RequireComponent(typeof(NoiseComponent))]
 [RequireComponent(typeof(HearingComponent))]
-[RequireComponent(typeof(TimerComponent))]
 public class PlayerControls : MonoBehaviour
 {
     [SerializeField] UIManager _uIManager;
@@ -50,6 +49,7 @@ public class PlayerControls : MonoBehaviour
     [Header("Interaction info")]
     [SerializeField] private GameObject targetInteractible; ///interactible player has nearby
     [SerializeField] private bool bIsInteracting; ///(for seeing input in editor)
+    private bool _bCanPause = true;
 
     [Header("Hiding Info")]
     [SerializeField] private bool bIsHiding;     ///(for seeing hiding bool in editor)
@@ -60,20 +60,27 @@ public class PlayerControls : MonoBehaviour
 
     [Header("Noise Options")] ///Will be passed onto NoiseComponent
     [SerializeField][Range(0, 50)] private float hearingThreshold = 0.0f;
-    private NoiseComponent _noiseComponent;
-    private float _currentMultiplier;
+
     [SerializeField][Range(0, 1)] private float idleMultiplier = 0f;
     [SerializeField][Range(0, 1)] private float sneakMultiplier = 0.3f;
     [SerializeField][Range(0, 1)] private float walkMultiplier = 0.5f;
     [SerializeField][Range(0, 1)] private float sprintMultiplier = 0.7f;
+    private float _currentMultiplier;
+    private NoiseComponent _noiseComponent;
 
     private HearingComponent _hearingComponent;
-    private TimerComponent _timerComponent;
+
     public EEntityType GetEntityType() { return entityType; }
     public EPlayerState GetPlayerState() { return playerState; }
     public GameObject GetTargetInteractible() { return targetInteractible; }
     public bool GetIsDead() { return _isDead; }
-    public void SetIsDead(bool stateToSet) {  _isDead = stateToSet; }
+    public void SetIsDead(bool stateToSet) 
+    {  
+        _isDead = stateToSet;
+        _bCanPause = !stateToSet;
+        _playerInputActions.Player.Disable();
+        _uIManager.TriggerDeadMenu();
+    }
     public bool GetIsHiding() { return bIsHiding; }
     public bool GetIsHideLerp() { return _bIsHideLerping; }
     public Vector3 GetPrevHidePos() { return _prevHidePos; }
@@ -114,7 +121,8 @@ public class PlayerControls : MonoBehaviour
     }
     private void Start()
     {
-         _uIManager = GameManager.m_Instance.GetUIManager();
+        _uIManager = GameManager.m_Instance.GetUIManager();
+        _uIManager.SetPlayerMouse(false);
 
         _playerInputActions = new PlayerInputActions();
         _playerInputActions.Player.Enable();
@@ -123,9 +131,6 @@ public class PlayerControls : MonoBehaviour
 
         _noiseComponent = GetComponent<NoiseComponent>();
         _hearingComponent = GetComponent<HearingComponent>();
-        _timerComponent = GetComponent<TimerComponent>();
-
-        _timerComponent.SetTimerMax(1.0f);
 
         GetComponent<Stimuli>().SetIsChaseable(true);
 
@@ -138,17 +143,18 @@ public class PlayerControls : MonoBehaviour
 
         bIsInteracting = false;
         bIsHiding = false;
-
-        _hearingComponent.SetHearingThreshold(hearingThreshold);
+        if (_hearingComponent)
+        { 
+            _hearingComponent.SetHearingThreshold(hearingThreshold);
+        }
     }
 
     private void FixedUpdate()
     {
-        Debug.Log($"{_prevHidePos}");
         ProcessNoise();
         if (_bIsHideLerping) 
         {
-            ProcessHide();
+            ProcessHideLerp();
         }
         ProcessMovement();
         ProcessSneak();
@@ -163,7 +169,7 @@ public class PlayerControls : MonoBehaviour
     {
         ProcessLook();
     }
-    private void ProcessHide()
+    private void ProcessHideLerp()
     {
         ///at this point, the targetinteractible should be the hiding interaction
         if (targetInteractible == null) { Debug.Log("no interactible"); return; }
@@ -332,6 +338,13 @@ public class PlayerControls : MonoBehaviour
         if (context.canceled)
         {
             bIsInteracting = false;
+        }
+    }
+    public void PauseAction(InputAction.CallbackContext context)
+    {
+        if (context.performed && _bCanPause)
+        { 
+            _uIManager.TogglePause();
         }
     }
     private IEnumerator ReleasePlayerLerpCooldown() 

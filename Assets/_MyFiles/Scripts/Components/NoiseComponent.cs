@@ -6,7 +6,7 @@ public class NoiseComponent : MonoBehaviour
 {
     private float _rawNoiseAmount;
     [SerializeField][Range(0, 1)] private float currentNoiseMultiplier;
-    [SerializeField][Range(0, 10)] private float triggerTimerValue = 1.0f;
+    [SerializeField][Range(0, 10)] private float triggerTimerCooldown = 1.0f;
     [SerializeField] private bool bIsTriggerTimer = false;
     private bool _bIsTriggered = false;
 
@@ -29,7 +29,7 @@ public class NoiseComponent : MonoBehaviour
     }
     private IEnumerator TriggerTimerCooldown() 
     {
-        yield return new WaitForSeconds(triggerTimerValue);
+        yield return new WaitForSeconds(triggerTimerCooldown);
         _bIsTriggered = false;
         StopCoroutine(TriggerTimerCooldown());
     }

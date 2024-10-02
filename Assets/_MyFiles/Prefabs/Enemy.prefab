@@ -125,6 +125,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1818551163685391976}
+  - {fileID: 5913797243247830149}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &1860984457653981949
@@ -216,7 +217,7 @@ NavMeshAgent:
   m_Speed: 3.5
   m_Acceleration: 8
   avoidancePriority: 50
-  m_AngularSpeed: 150
+  m_AngularSpeed: 250
   m_StoppingDistance: 1.75
   m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 1
@@ -241,6 +242,8 @@ MonoBehaviour:
   waitTime: 1
   playerRef: {fileID: 0}
   targetPos: {fileID: 0}
+  attackPoint: {fileID: 5913797243247830149}
+  attackRange: 0.5
 --- !u!114 &6298732583009147092
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -304,3 +307,34 @@ MonoBehaviour:
   tempCallPosName: RoamPos
   roamingRange: 20
   enableIndependentRoam: 0
+--- !u!1 &8214810524785050830
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5913797243247830149}
+  m_Layer: 0
+  m_Name: AttackPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5913797243247830149
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8214810524785050830}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0.978}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4101539545193077617}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

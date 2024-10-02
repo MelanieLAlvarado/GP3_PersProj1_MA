@@ -830,14 +830,11 @@ MonoBehaviour:
   playerPrefab: {fileID: 6049859577665911794, guid: 84cb3261d5a269f4380e0a49e6a1eaf2, type: 3}
   playerSpawn: {fileID: 979498884022885580}
   GameplayWidgetPrefab: {fileID: 3932661695493108509, guid: 10b98a4c5a9dc0d47a1a74fa0d5dcdb3, type: 3}
-  noiseManager: {fileID: 0}
   enemyManager: {fileID: 0}
   uIManager: {fileID: 0}
   enemyPrefab: {fileID: 2436419054086537201, guid: 80bb90de75f69da4a979206888841b49, type: 3}
   enemySpawnLoc: {fileID: 2074603706}
-  visualMask:
-    serializedVersion: 2
-    m_Bits: 128
+  enemySpawnCount: 1
 --- !u!4 &1979294397
 Transform:
   m_ObjectHideFlags: 0

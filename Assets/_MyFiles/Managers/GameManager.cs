@@ -11,6 +11,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject playerPrefab;
     [SerializeField] private Transform playerSpawn;
     private GameObject _player;
+    
     [SerializeField] private GameObject GameplayWidgetPrefab;
     private GameObject _GameplayWidget;
 
@@ -21,6 +22,7 @@ public class GameManager : MonoBehaviour
     [Header("Enemy Info")]///for spawning Enemies (passed on to enemy Manager; May change later)
     [SerializeField] private GameObject enemyPrefab;
     [SerializeField] private Transform enemySpawnLoc;
+    [SerializeField] private int enemySpawnCount = 1;
     private void Awake()
     {
         if (m_Instance != null && m_Instance != this)
@@ -55,6 +57,7 @@ public class GameManager : MonoBehaviour
     {
         if (enemyManager) { return; }
         enemyManager = gameObject.AddComponent<EnemyManager>();
+        enemyManager.SetEnemyCount(enemySpawnCount);
     }
     private void CreateGameplayWidget()
     {

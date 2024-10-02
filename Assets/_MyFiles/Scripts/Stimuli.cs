@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class Stimuli : MonoBehaviour
 {
-    [SerializeField] private bool isVisuallyDetectable = false; 
+    [SerializeField] private bool isVisuallyDetectable = false; ///tickable in editor
     private bool _isChaseable = false;
 
     public bool GetIsVisuallyDetectable() { return isVisuallyDetectable; }

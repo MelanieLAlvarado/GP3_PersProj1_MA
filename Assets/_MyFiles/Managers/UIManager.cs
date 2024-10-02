@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
@@ -8,6 +9,10 @@ public class UIManager : MonoBehaviour
     [Header("UI Elements")]
     [SerializeField] private Slider noiseMeter;
     [SerializeField] private TextMeshProUGUI interactionText;
+    
+    [SerializeField] private GameObject pauseMenuUI;
+    [SerializeField] private GameObject deadMenuUI;
+    private bool _bIsPaused = false;
 
     [Header("Enemy Awareness Icons")]
     [SerializeField] private Sprite canSeeIcon;
@@ -47,5 +52,61 @@ public class UIManager : MonoBehaviour
             return;
         }
         enemyAwarenessImage.gameObject.SetActive(false);
+    }
+
+    public void TogglePause() 
+    {
+        if (_bIsPaused)
+        {
+            Resume();
+        }
+        else
+        { 
+            Pause();
+        }
+        _bIsPaused = !_bIsPaused;
+    }
+
+    public void Pause()
+    {
+        SetPlayerMouse(true);
+        pauseMenuUI.SetActive(true);
+        Time.timeScale = 0f;
+    }
+
+    public void Resume() 
+    {
+        SetPlayerMouse(false);
+        pauseMenuUI.SetActive(false);
+        Time.timeScale = 1f;
+    }
+    public void RestartButton() 
+    {
+        Debug.Log("Restart");
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+    public void QuitButton()
+    {
+        Debug.Log("Exit");
+        Application.Quit();
+    }
+    public void TriggerDeadMenu() 
+    {
+        SetPlayerMouse(true);
+        deadMenuUI.SetActive(true);
+        Time.timeScale = 0f;
+    }
+    public void SetPlayerMouse(bool stateToSet) 
+    {
+        if (stateToSet) 
+        {
+            Cursor.lockState = CursorLockMode.None;
+        }
+        else
+        { 
+            Cursor.lockState = CursorLockMode.Locked;
+        }
+        Cursor.visible = stateToSet;
     }
 }

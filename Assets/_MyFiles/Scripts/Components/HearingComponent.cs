@@ -42,6 +42,10 @@ public class HearingComponent : Sense
         _bAreNoisesInaudible = true;
         _audibleNoiseDict.Clear();
     }
+    public void BeginRemoveNoiseDelay(GameObject noiseToRemove) 
+    {
+        StartCoroutine(RemoveNoiseDelay(noiseToRemove));
+    }
     public Transform GetHearingTarget() 
     {
         return _hearingTarget; 
@@ -133,7 +137,13 @@ public class HearingComponent : Sense
             _targetNoiseCalculatedValue = 0.0f;
         }
     }
-    
+    public IEnumerator RemoveNoiseDelay(GameObject noiseToRemove) 
+    {
+        yield return new WaitForSeconds(1);
+        RemoveFromAudibleNoiseDict(noiseToRemove);
+        StopCoroutine(RemoveNoiseDelay(noiseToRemove));
+    }
+
     protected override void OnDrawDebug()
     {
         Gizmos.color = Color.cyan;

@@ -396,6 +396,22 @@ MonoBehaviour:
         m_CallState: 1
     m_ActionId: 18c09d3e-ee5f-4d5b-bbe8-0a1015190ccf
     m_ActionName: 'Player/Sneak[/Keyboard/ctrl]'
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 5317835997269765029}
+        m_TargetAssemblyTypeName: PlayerControls, Assembly-CSharp
+        m_MethodName: PauseAction
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: ac8dca26-8b5c-4370-a8e8-88cb6417d588
+    m_ActionName: Player/Pause
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
@@ -414,7 +430,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentNoiseMultiplier: 0
-  triggerTimerValue: 0
+  triggerTimerCooldown: 1
   bIsTriggerTimer: 0
 --- !u!114 &7907126681620547041
 MonoBehaviour:
