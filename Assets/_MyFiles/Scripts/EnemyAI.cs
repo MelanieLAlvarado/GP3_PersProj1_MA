@@ -18,6 +18,7 @@ public class EnemyAI : MonoBehaviour
 
     [Header("Roam/WaitTime Options")]
     [Range(0f, 10f)][SerializeField] private float waitTime = 1.5f;
+    private bool _isWait = false;
 
     [Header("Position Info [Read Only]")]
     [SerializeField] private Transform targetPos; ///position that holds other positions
@@ -41,6 +42,7 @@ public class EnemyAI : MonoBehaviour
         }
         return false; 
     }
+    public bool GetIsWait() { return _isWait; }
 
     private void Start()
     {
@@ -64,75 +66,66 @@ public class EnemyAI : MonoBehaviour
             targetPos = new GameObject("TempPos").transform;
         }
 
-        SetEnemyState(EEnemyState.wait);
+        Wait();
     }
-    private void Update()
+    public void Roam() 
     {
-        ProcessEnemyAI();
-    }
-    private void ProcessEnemyAI() ///checks conditions and sets enemy state
-    {
-        if (enemyState == EEnemyState.wait && !_waitTimer.IsTimerFinished())
+        enemyState = EEnemyState.Roam;
+        if (_roamingComponent)
         {
-            ///Waiting based on timer component (waitTimer)
-            return;
-        }
-        if (_visionComponent && _visionComponent.GetCurrentSensibleStimuliSetIsntEmpty())
-        {
-            SetEnemyState(EEnemyState.chase);
-        }
-        else if (_hearingComponent && _hearingComponent.GetIsAudibleNoisesPresent())
-        {
-            SetEnemyState(EEnemyState.curious);
+            targetPos = _roamingComponent.Roam(targetPos); ///Add wait functionality
+            GoToTarget();
         }
         else
         {
-            SetEnemyState(EEnemyState.roam);
+            Wait();
         }
     }
-    private void SetEnemyState(EEnemyState stateToSet) ///determines enemy action
+    public void Curious()
     {
-        enemyState = stateToSet;
-        switch (enemyState)
-        {
-            case EEnemyState.wait:
-                ///do nothing
-                if (_hearingComponent)
-                { 
-                    _hearingComponent.ClearAudibleNoiseInfo();
-                }
-                targetPos = this.transform;
-                targetPos.position = transform.position;
-                _waitTimer.ResetTimer();
-                break;
-            case EEnemyState.roam:
-                if (_roamingComponent)
-                {
-                    targetPos = _roamingComponent.Roam(targetPos); ///Add wait functionality
-                    GoToTarget();
-                }
-                else
-                {
-                    SetEnemyState(EEnemyState.wait);
-                }
-                break;
-            case EEnemyState.curious:
-                ///swap target to an audible sound
-                targetPos = _hearingComponent.GetHearingTarget();
-                InvestigateNoise();
-                GoToTarget();
-                break;
-            case EEnemyState.chase:
-                if (_hearingComponent.GetIsAudibleNoisesPresent())
-                {
-                    _hearingComponent.ClearAudibleNoiseInfo();
-                }
-                targetPos = _visionComponent.GetVisualTarget().transform;
-                ChaseVisual();
-                GoToTarget();
-                break;
-        }
+        enemyState = EEnemyState.Curious;
+        ///swap target to an audible sound
+        targetPos = _hearingComponent.GetHearingTarget();
+        InvestigateNoise();
+        GoToTarget();
     }
+    public void Chase()
+    {
+        enemyState = EEnemyState.Chase;
+        if (_hearingComponent.GetIsAudibleNoisesPresent())
+        {
+            _hearingComponent.ClearAudibleNoiseInfo();
+        }
+        if (_visionComponent.GetVisualTarget())
+        {
+            targetPos = _visionComponent.GetVisualTarget().transform;
+        }
+        ChaseVisual();
+        GoToTarget();
+    }
+    public bool ProcessWait() ///checks conditions and sets enemy state
+    {
+        if (enemyState == EEnemyState.Wait && !_waitTimer.IsTimerFinished())
+        {
+            return true;
+        }
+        _isWait = false;
+        return false;
+    }
+    private void Wait()
+    {
+        ///do nothing
+        enemyState = EEnemyState.Wait;
+        if (_hearingComponent)
+        {
+            _hearingComponent.ClearAudibleNoiseInfo();
+        }
+        targetPos = this.transform;
+        targetPos.position = transform.position;
+        _waitTimer.ResetTimer();
+        _isWait = true;
+    }
+
     private bool IsTargetAtStoppingDistance() 
     {
         float targetDist = Vector3.Distance(transform.position, _enemy_NavMeshAgent.destination);
@@ -151,17 +144,16 @@ public class EnemyAI : MonoBehaviour
         Vector3 currentMove = transform.position - _prevPosition;
         _currentSpeed = currentMove.magnitude/Time.deltaTime;
         _prevPosition = transform.position;
-        if (_currentSpeed == 0 && enemyState != EEnemyState.wait) ///Enemy is stuck check
+        if (_currentSpeed == 0 && enemyState != EEnemyState.Wait) ///Enemy is stuck check
         {
             Debug.Log("Enemy is stuck!!!");
             targetPos = null;
-            SetEnemyState(EEnemyState.wait);
+            Wait();
         }
     }
     private void ChaseVisual() 
     {
         if (targetPos == null) { return; }
-
 
         if (IsTargetAtStoppingDistance())
         {
@@ -182,12 +174,13 @@ public class EnemyAI : MonoBehaviour
         
         if (!player) 
         {
-            SetEnemyState(EEnemyState.wait);
+            Wait();
             return; 
         }
 
         if (player.GetIsHiding() && player.GetIsDead() == false)
         {
+            //player.SetPrevHidePos(attackPoint.position);
             IInterActions hidingInteraction = player.GetTargetInteractible().GetComponent<IInterActions>();
             hidingInteraction.OnInteraction();
         }
@@ -243,4 +236,4 @@ public class EnemyAI : MonoBehaviour
         }
     }
 }
-public enum EEnemyState { wait, roam, curious, chase} ///Enemy action state
+//public enum EEnemyState { Wait, Roam, Curious, Chase} ///Enemy action state

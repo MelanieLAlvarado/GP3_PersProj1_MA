@@ -84,7 +84,7 @@ public class PlayerControls : MonoBehaviour
     public bool GetIsHiding() { return bIsHiding; }
     public bool GetIsHideLerp() { return _bIsHideLerping; }
     public Vector3 GetPrevHidePos() { return _prevHidePos; }
-    public void SetPrevHidePos(Transform transToSet) { _prevHidePos = transToSet.position; }
+    public void SetPrevHidePos(Vector3 vectorToSet) { _prevHidePos = vectorToSet; }
 
     public void SetTargetInteractible(GameObject interactionToSet)
     {

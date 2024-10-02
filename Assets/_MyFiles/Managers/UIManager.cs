@@ -39,13 +39,13 @@ public class UIManager : MonoBehaviour
     {
         if (!enemyAwarenessImage) { return; }
 
-        if (stateToReceive == EEnemyState.chase && canSeeIcon)
+        if (stateToReceive == EEnemyState.Chase && canSeeIcon)
         {
             enemyAwarenessImage.GetComponent<Image>().sprite = canSeeIcon;
             enemyAwarenessImage.gameObject.SetActive(true);
             return;
         }
-        else if (stateToReceive == EEnemyState.curious && canHearIcon)
+        else if (stateToReceive == EEnemyState.Curious && canHearIcon)
         {
             enemyAwarenessImage.GetComponent<Image>().sprite = canHearIcon;
             enemyAwarenessImage.gameObject.SetActive(true);

@@ -104,6 +104,7 @@ GameObject:
   - component: {fileID: 6881706579658766903}
   - component: {fileID: 1523348476297620125}
   - component: {fileID: -9021636143937447779}
+  - component: {fileID: 4227976215202202309}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Untagged
@@ -307,6 +308,32 @@ MonoBehaviour:
   tempCallPosName: RoamPos
   roamingRange: 20
   enableIndependentRoam: 0
+--- !u!114 &4227976215202202309
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2436419054086537201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0038c16c34866b4f9e25c9c0dc0f7e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Graph: {fileID: -6328429157931198368, guid: ff44b09817bc0bf489452c7e0c4e01b0, type: 2}
+  m_BlackboardVariableOverridesList:
+  - rid: 5613852436833501437
+  references:
+    version: 2
+    RefIds:
+    - rid: 5613852436833501437
+      type: {class: 'BlackboardVariable`1[[UnityEngine.GameObject, UnityEngine.CoreModule]]', ns: Unity.Behavior, asm: Unity.Behavior}
+      data:
+        GUID:
+          m_Value0: 1
+          m_Value1: 0
+        Name: Self
+        m_Value: {fileID: 2436419054086537201}
 --- !u!1 &8214810524785050830
 GameObject:
   m_ObjectHideFlags: 0

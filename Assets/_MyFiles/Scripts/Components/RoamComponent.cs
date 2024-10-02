@@ -26,6 +26,8 @@ public class RoamComponent : MonoBehaviour
 
         _roamPos = new GameObject(tempCallPosName).transform;
         _roamPos.position = transform.position;
+
+        _roamPos.transform.position = AtRoamPositionCheck(_roamPos.transform);
     }
     private void Update()
     {
