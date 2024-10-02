@@ -447,7 +447,7 @@ MonoBehaviour:
   bDrawDebug: 0
   forgetTime: 2
   hearingRange: 30
-  hearingThreshold: 0.1
+  hearingThreshold: 0
 --- !u!114 &955971924533794263
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -140,6 +140,7 @@ public class HearingComponent : Sense
     public IEnumerator RemoveNoiseDelay(GameObject noiseToRemove) 
     {
         yield return new WaitForSeconds(1);
+        ClearAudibleNoiseInfo();
         RemoveFromAudibleNoiseDict(noiseToRemove);
         StopCoroutine(RemoveNoiseDelay(noiseToRemove));
     }

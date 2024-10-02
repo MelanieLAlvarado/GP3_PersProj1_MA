@@ -151,7 +151,7 @@ public class EnemyAI : MonoBehaviour
         Vector3 currentMove = transform.position - _prevPosition;
         _currentSpeed = currentMove.magnitude/Time.deltaTime;
         _prevPosition = transform.position;
-        if (_currentSpeed == 0 && enemyState != EEnemyState.wait) ///Player is stuck check
+        if (_currentSpeed == 0 && enemyState != EEnemyState.wait) ///Enemy is stuck check
         {
             Debug.Log("Enemy is stuck!!!");
             targetPos = null;
@@ -173,18 +173,11 @@ public class EnemyAI : MonoBehaviour
             else if (IsInAttackRange())
             {
                 Attack();
-                //SetEnemyState(EEnemyState.wait);
             }
         }
-        /*else 
-        {
-            ///Playerlost. returns to roaming after waiting
-            SetEnemyState(EEnemyState.wait);
-        }*/
     }
-    private void PullPlayerFromHidingPlace() ///(WIP)
+    private void PullPlayerFromHidingPlace()
     {
-        Debug.Log("Player Pull out!!!");
         PlayerControls player = targetPos.GetComponent<PlayerControls>();
         
         if (!player) 
@@ -195,7 +188,6 @@ public class EnemyAI : MonoBehaviour
 
         if (player.GetIsHiding() && player.GetIsDead() == false)
         {
-            Debug.Log($"CAught Player!");
             IInterActions hidingInteraction = player.GetTargetInteractible().GetComponent<IInterActions>();
             hidingInteraction.OnInteraction();
         }
@@ -229,7 +221,6 @@ public class EnemyAI : MonoBehaviour
         ///TargetPos is determined by hearing component.
         if (IsTargetAtStoppingDistance()) 
         {
-            _hearingComponent.ClearAudibleNoiseInfo();
             NoiseComponent targetNoise = null;
             if (targetPos != null)
             {
@@ -240,6 +231,7 @@ public class EnemyAI : MonoBehaviour
                 targetNoise.SetIsTriggered(false);
                 _hearingComponent.RemoveFromAudibleNoiseDict(targetPos.gameObject);
             }
+            _hearingComponent.ClearAudibleNoiseInfo();
         }
     }
     public void OnDrawGizmos()
