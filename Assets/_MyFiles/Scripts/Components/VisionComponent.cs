@@ -38,7 +38,8 @@ public class VisionComponent : Sense
         RaycastHit hitPoint;
         if (transform.IsBlockedTo(stimuli.transform, Vector3.up + Vector3.forward, out hitPoint, visualRadius))
         {
-            if (transform.IsHitExceptionLayer(hitPoint, exceptionLayer))  ///does not get blocked if something is that layer
+            ///does not get blocked if something is that layer
+            if (transform.IsHitExceptionLayer(hitPoint, exceptionLayer))  
             {
                 return CanSeeStimuli(stimuli);
             }
@@ -47,42 +48,9 @@ public class VisionComponent : Sense
 
         return CanSeeStimuli(stimuli);
     }
-    /*private bool FieldOfViewCheck()
-{
-
-    Collider[] visualChecks = Physics.OverlapSphere(transform.position, visualRadius, visualTargetMask, QueryTriggerInteraction.Ignore);
-
-    if (visualChecks.Length != 0)
-    {
-        Transform visualTarget = visualChecks[0].transform;
-        Vector3 directionToTarget = (visualTarget.position - transform.position).normalized; ///raw direction vector
-        if (Vector3.Angle(transform.forward, directionToTarget) < visualAngle / 2)
-        {///  ^--- creating the FOV angle from forward vector by halfing the angle and distributing it equally on both sides
-
-            float distanceToTarget = Vector3.Distance(transform.position, visualTarget.position);
-            if (!Physics.Raycast(transform.position, directionToTarget, distanceToTarget, obstructionMask))
-            {
-                targetPos = visualTarget;
-                if (!PlayerHiddenCheck())
-                {
-                    bCanSeePlayer = true;
-                }
-                if (bCanSeePlayer == false)
-                {
-                    return false; ///player hid before coming inside FOV
-                }
-                return true; ///if the visual target within the angle, range, and not obtructed: then chase
-            }
-            bCanSeePlayer = false;
-            return false; /// The visual target is not within the angle of the FOV
-        }
-    }
-    bCanSeePlayer = false;
-    return false; /// There's nothing in the sphere as a visual target mask or in the angle of the FOV
-}*/
-    private bool CanSeeStimuli(Stimuli stimuli) ///determines if the stimuli is hidden
-    {
-        if (stimuli.GetIsChaseable() == true)
+    private bool CanSeeStimuli(Stimuli stimuli) 
+    {///determines if the stimuli is hidden before vision cone
+        if (stimuli.GetIsCurrentlyChaseable() == true)
         {
             _bCanSeeVisualTarget = true;
             if (_visualTarget == null)

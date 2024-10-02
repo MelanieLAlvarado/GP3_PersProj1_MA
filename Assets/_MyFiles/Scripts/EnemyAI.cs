@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngineInternal;
 
 [RequireComponent(typeof(VisionComponent))]
 [RequireComponent(typeof(HearingComponent))]
@@ -55,7 +56,6 @@ public class EnemyAI : MonoBehaviour
 
         _waitTimer = GetComponents<TimerComponent>()[0];
         _waitTimer.SetTimerMax(waitTime);
-        _waitTimer.ResetTimer();
 
         if (_roamingComponent != null)
         {
@@ -65,8 +65,11 @@ public class EnemyAI : MonoBehaviour
         {
             targetPos = new GameObject("TempPos").transform;
         }
-
         Wait();
+    }
+    private void Update()
+    {
+        ProcessWait();
     }
     public void Roam() 
     {
@@ -103,27 +106,29 @@ public class EnemyAI : MonoBehaviour
         ChaseVisual();
         GoToTarget();
     }
-    public bool ProcessWait() ///checks conditions and sets enemy state
+    private void ProcessWait() ///checks conditions and sets enemy state
     {
         if (enemyState == EEnemyState.Wait && !_waitTimer.IsTimerFinished())
         {
-            return true;
+            _isWait = false;
         }
-        _isWait = false;
-        return false;
     }
     private void Wait()
     {
         ///do nothing
+        _isWait = true;
         enemyState = EEnemyState.Wait;
         if (_hearingComponent)
         {
             _hearingComponent.ClearAudibleNoiseInfo();
         }
-        targetPos = this.transform;
-        targetPos.position = transform.position;
+        if (!targetPos)
+        {
+            targetPos = this.transform;
+            targetPos.position = transform.position;
+        }
         _waitTimer.ResetTimer();
-        _isWait = true;
+        
     }
 
     private bool IsTargetAtStoppingDistance() 
@@ -138,13 +143,17 @@ public class EnemyAI : MonoBehaviour
     private void GoToTarget() 
     {
         if (targetPos)
-        { 
+        {
             _enemy_NavMeshAgent.destination = targetPos.transform.position;
+        }
+        else
+        { 
+            _enemy_NavMeshAgent.destination = this.transform.position;
         }
         Vector3 currentMove = transform.position - _prevPosition;
         _currentSpeed = currentMove.magnitude/Time.deltaTime;
         _prevPosition = transform.position;
-        if (_currentSpeed == 0 && enemyState != EEnemyState.Wait) ///Enemy is stuck check
+        if (_currentSpeed == 0 && IsTargetAtStoppingDistance()) ///Enemy is stuck check
         {
             Debug.Log("Enemy is stuck!!!");
             targetPos = null;
@@ -158,7 +167,7 @@ public class EnemyAI : MonoBehaviour
         if (IsTargetAtStoppingDistance())
         {
             Stimuli targetStimuli = targetPos.GetComponent<Stimuli>();
-            if (_visionComponent.GetCanSeeVisualTarget() && !targetStimuli.GetIsChaseable())
+            if (_visionComponent.GetCanSeeVisualTarget() && !targetStimuli.GetIsCurrentlyChaseable())
             {
                 PullPlayerFromHidingPlace();
             }

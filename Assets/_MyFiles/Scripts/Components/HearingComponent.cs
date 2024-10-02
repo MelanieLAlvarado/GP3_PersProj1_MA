@@ -116,11 +116,11 @@ public class HearingComponent : Sense
     }
     private void SelectHearingTarget()
     {
-        ///iterates through the list to find the highest noise value
-
         if (GetIsAudibleNoisesPresent() && IsNoisesCountMoreThanSenses())
         {
+            ///iterates through the list to find the highest noise value
             Stimuli loudestStimuli = FindLoudestNoiseStimuli();
+
             float loudestNoiseVal = _audibleNoiseDict[loudestStimuli];
             if (loudestNoiseVal > hearingThreshold)
             {
@@ -161,6 +161,7 @@ public class HearingComponent : Sense
     protected override bool IsStimuliSensible(Stimuli stimuli)
     {
         float stimuliNoiseVal = CalculateSingleNoiseValue(stimuli.gameObject);
-        return transform.InRangeOf(stimuli.transform, hearingRange) && stimuliNoiseVal > hearingThreshold;
+        bool inRange = transform.InRangeOf(stimuli.transform, hearingRange);
+        return inRange && stimuliNoiseVal > hearingThreshold;
     }
 }

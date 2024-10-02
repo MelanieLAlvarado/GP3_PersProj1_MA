@@ -100,11 +100,11 @@ public class PlayerControls : MonoBehaviour
         StopCoroutine(ReleasePlayerLerpCooldown());
         if (_bIsHideLerping) { return; }
         if (!bIsHiding)
-        {
-            _prevHidePos = this.gameObject.transform.position;///saving non-hiding location
+        {   ///saving non-hiding location
+            _prevHidePos = this.gameObject.transform.position;
         }
         bIsHiding = !bIsHiding;
-        if (bIsHiding)
+        if (bIsHiding) 
         {
             playerState = EPlayerState.hiding;
         }
@@ -114,8 +114,8 @@ public class PlayerControls : MonoBehaviour
         }
         _bIsHideLerping = true;
         if (GetComponent<Stimuli>())
-        {
-            GetComponent<Stimuli>().SetIsChaseable(!bIsHiding); ///for sense detectiblity
+        {   ///for sense detectiblity
+            GetComponent<Stimuli>().SetIsChaseable(!bIsHiding); 
         }
         StartCoroutine(ReleasePlayerLerpCooldown());
     }
@@ -258,8 +258,8 @@ public class PlayerControls : MonoBehaviour
     }
     private void ProcessNoise() 
     {
-        ProcessNoiseType(); ///checking type and setting current multiplier        
-        UpdateNoiseMeter(); ///checking if there's audio and updating UI
+        ProcessNoiseType(); ///checking movement type and setting current multiplier        
+        UpdateNoiseMeter(); ///checking hearingComponent's targetNoise and updating UI
         if (_noiseComponent)
         { 
             _noiseComponent.TriggerNoise();

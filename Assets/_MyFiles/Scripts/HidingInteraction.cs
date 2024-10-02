@@ -30,7 +30,8 @@ public class HidingInteraction : MonoBehaviour, IInterActions
         if (_player)
         {
             _player.ToggleIsHiding();
-            GameManager.m_Instance.GetUIManager().SetInteractionText(GetInteractionMessage());
+            UIManager uIManager = GameManager.m_Instance.GetUIManager();
+            uIManager.SetInteractionText(GetInteractionMessage());
         }
     }
     private void OnTriggerEnter(Collider other)

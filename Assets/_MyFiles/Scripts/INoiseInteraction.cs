@@ -30,7 +30,8 @@ public class INoiseInteraction : MonoBehaviour, IInterActions
         {
             ///triggering noise component
             _noiseComponent.TriggerNoise();
-            _player.GetComponent<HearingComponent>().BeginRemoveNoiseDelay(this.gameObject);
+            HearingComponent playerHearComp =_player.GetComponent<HearingComponent>();
+            playerHearComp.BeginRemoveNoiseDelay(this.gameObject);
         }
     }
     private void OnTriggerEnter(Collider other)

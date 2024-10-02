@@ -12,7 +12,7 @@ public partial class ProcessWaitAction : Action
 
     protected override Status OnUpdate()
     {
-        Self.Value.GetComponent<EnemyAI>().ProcessWait();
+        //Self.Value.GetComponent<EnemyAI>().ProcessWait();
         return Status.Success;
     }
 }
