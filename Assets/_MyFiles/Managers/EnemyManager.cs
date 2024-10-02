@@ -2,18 +2,32 @@ using NUnit.Framework;
 using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Collections;
 
 public class EnemyManager : MonoBehaviour
 {
+    UIManager _uIManager;
     List<GameObject> _enemies = new List<GameObject>();
     private Transform _enemySpawnLoc; ///<-- recieved from GameManager (may change)
     private GameObject _enemyPrefab;  ///<-- recieved from GameManager (may change)
-    [SerializeField] private int enemyAmountToSpawn = 1;//<-- might move into the gamemanager... might leave it as 1 enemy
+    [SerializeField] private int enemyAmountToSpawn = 1;
+    public void SetEnemyCount(int enemyCountToSet) 
+    {
+        enemyAmountToSpawn = enemyCountToSet;
+    }
     private void Start()
     {
         _enemySpawnLoc = GameManager.m_Instance.GetEnemySpawnLoc();
         _enemyPrefab = GameManager.m_Instance.GetEnemyPrefab();
         SpawnEnemies();
+        StartCoroutine(GatherEnemyManagerDelay());
+    }
+    private void Update()
+    {
+        if (_uIManager)
+        { 
+            CheckEnemyStates();
+        }
     }
     private void SpawnEnemies() 
     {
@@ -27,7 +41,8 @@ public class EnemyManager : MonoBehaviour
             GameObject enemy;
             if (_enemySpawnLoc != null)
             {
-                enemy = Instantiate(_enemyPrefab, _enemySpawnLoc.position, _enemySpawnLoc.rotation);
+                Vector3 offset = new Vector3(_enemySpawnLoc.position.x + i, 0, 0);
+                enemy = Instantiate(_enemyPrefab, _enemySpawnLoc.position + offset, _enemySpawnLoc.rotation);
             }
             else 
             { 
@@ -36,14 +51,28 @@ public class EnemyManager : MonoBehaviour
             _enemies.Add(enemy);
         }
     }
-    public void CheckEnemiesHearingRanges(List<GameObject> triggeredNoiseObjs)
+    private void CheckEnemyStates() 
     {
-        ///Checking every enemy in manager
-        for (int i = 0; i < _enemies.Count; i++) ///<-- checking each enemy and passing the triggered objs in
+        EEnemyState highestState = 0; ///Wait == 0
+        foreach (GameObject enemy in _enemies)
         {
-            HearingComponent enemyHearingComp = _enemies[i].GetComponent<HearingComponent>();
-            ///Checking every object from parameters
-            enemyHearingComp.CheckHearingRange(triggeredNoiseObjs);
+            EnemyAI enemyAI = enemy.GetComponent<EnemyAI>();
+            EEnemyState enemyState = enemyAI.GetEnemyState();
+            if (enemyState > highestState && enemyAI.IsTargetPlayer())
+            {
+                highestState = enemyState;
+            }
         }
+        _uIManager.UpdateEnemyAwarenessIcon(highestState);
+    }
+    private IEnumerator GatherEnemyManagerDelay() 
+    {
+        yield return new WaitForSeconds(0.5f);
+        _uIManager = GameManager.m_Instance.GetUIManager();
+        if (!_uIManager)
+        {
+            Debug.LogError("Enemy Manager unable to find UI Manager!");
+        }
+        StopCoroutine(GatherEnemyManagerDelay());
     }
 }

@@ -1,92 +1,94 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.AI;
 
-[RequireComponent(typeof(SphereCollider))]
-public class HearingComponent : MonoBehaviour
+public class HearingComponent : Sense
 {
-    //WIP rework to function on player
-    private NoiseManager _noiseManager;
-    private UIManager _uIManager;
     [Header("Hearing Options")]
     [Range(1.0f, 50.0f)][SerializeField] float hearingRange = 30.0f;
     [Range(0f, 100f)][SerializeField] float hearingThreshold = 20.0f;
-    private bool _areNoisesInaudible = true;
-    private bool _canDetectSelf = false;
+    private bool _bAreNoisesInaudible = true;
 
     [Header("Hearing List Info [READ ONLY]")]
-    [SerializeField] private List<GameObject> noiseObjsInRange = new List<GameObject>();
-    [SerializeField] private List<GameObject> audibleNoiseList = new List<GameObject>();
-    [SerializeField] private List<float> noiseCalculatedValues = new List<float>();
-    private float targetNoiseCalculatedValue = 0.0f;
+    private Dictionary<Stimuli, float> _audibleNoiseDict = new Dictionary<Stimuli, float>();
 
-    public bool GetAreNoisesInaudible() { return _areNoisesInaudible; }
-    public List<GameObject> GetNoisesObjsInRangeList() { return noiseObjsInRange; }
-    public List<float> GetNoiseCalculatedValues() { return noiseCalculatedValues; }
+    private float _targetNoiseCalculatedValue = 0.0f;
+    private Transform _hearingTarget;
+
+    public float GetTargetNoiseCalculatedValue() { return _targetNoiseCalculatedValue;  }
     public bool GetIsAudibleNoisesPresent() ///usually starts the hearing process in other scripts
     {
-        return audibleNoiseList.Count > 0; 
+        return _audibleNoiseDict.Count > 0;
     }
-    public void SetCanDetectSelf(bool detectToSet) 
-    {
-        _canDetectSelf = detectToSet;
-    }
-    public void SetHearingThreshold(float amountToSet) 
+    public void SetHearingThreshold(float amountToSet)
     {
         hearingThreshold = amountToSet;
     }
-    public void CheckHearingRange(List<GameObject> soundsToCheck) 
+    public void RemoveFromAudibleNoiseDict(GameObject noiseToRemove)
     {
-        for (int j = 0; j < soundsToCheck.Count; j++)
+        Stimuli stimuliKey = noiseToRemove.GetComponent<Stimuli>();
+        if (_audibleNoiseDict.ContainsKey(stimuliKey))
         {
-            Debug.Log("OBJECT CHECK");
-            if (IsInHearingRange(soundsToCheck[j].transform))
+            _audibleNoiseDict.Remove(stimuliKey);
+        }
+    }
+    public void ClearAudibleNoiseInfo() ///reseting the sounds heard
+    {
+        _hearingTarget = null;
+        _targetNoiseCalculatedValue = 0.0f;
+        _bAreNoisesInaudible = true;
+        _audibleNoiseDict.Clear();
+    }
+    public void BeginRemoveNoiseDelay(GameObject noiseToRemove) 
+    {
+        StartCoroutine(RemoveNoiseDelay(noiseToRemove));
+    }
+    public Transform GetHearingTarget() 
+    {
+        return _hearingTarget; 
+    }
+    private void Update()
+    {
+        foreach (Stimuli stimuli in GetCurrentSensibleStimuliSet())
+        {
+            UpdateAudibleStimuliDict(stimuli);
+        }
+        SelectHearingTarget();
+    }
+    private void UpdateAudibleStimuliDict(Stimuli stimuli)
+    {
+        float stimuliNoise = CalculateSingleNoiseValue(stimuli.gameObject);
+        if (stimuliNoise > hearingThreshold)
+        {
+            if (_audibleNoiseDict.ContainsKey(stimuli))
             {
-                AddToAudibleNoiseList(soundsToCheck[j]);
+                _audibleNoiseDict[stimuli] = stimuliNoise;
+                return;
+            }
+            NoiseComponent noiseComp = stimuli.gameObject.GetComponent<NoiseComponent>();
+            if (noiseComp && noiseComp.GetIsTriggered() == true)
+            {
+                _audibleNoiseDict.Add(stimuli, stimuliNoise);
             }
         }
-    }
-    public void UpdateNoiseMeter() ///used by player. may move later
-    {
-        _uIManager = GameManager.m_Instance.GetUIManager();
-        _uIManager.UpdateNoiseMeterUI(targetNoiseCalculatedValue);
-    }
-    private void Start()
-    {
-        _noiseManager = GameManager.m_Instance.GetNoiseManager();
-
-        SphereCollider colliderRange = GetComponent<SphereCollider>();
-        colliderRange.isTrigger = true;
-        colliderRange.radius = hearingRange;
-        LayerMask visualMask = GameManager.m_Instance.GetVisualMask();
-        colliderRange.excludeLayers += visualMask;
-
-        if (this.gameObject.GetComponent<EnemyAI>()) 
+        else
         {
-            Rigidbody rigidBody = GetComponent<Rigidbody>();
-            rigidBody.useGravity = false;
-            rigidBody.isKinematic = true;
-            rigidBody.constraints = RigidbodyConstraints.FreezeAll;
+            if (_audibleNoiseDict.ContainsKey(stimuli))
+            {
+                _audibleNoiseDict.Remove(stimuli);
+            }
         }
-        if (this.gameObject.GetComponent<NoiseComponent>() && _canDetectSelf == true)
+        if (!IsNoisesCountMoreThanSenses())
         {
-            noiseObjsInRange.Add(this.gameObject);
+            _audibleNoiseDict.Clear();
         }
     }
-    private void AddToAudibleNoiseList(GameObject noiseToAdd)
+    private bool IsNoisesCountMoreThanSenses()
     {
-        if (audibleNoiseList.Contains(noiseToAdd))
-        {
-            Debug.Log("This obj is already in list!");
-            return;
-        }
-        if (CalculateSingleNoiseValue(noiseToAdd) >= hearingThreshold)
-        {
-            Debug.Log("Noise has been added...");
-            
-            audibleNoiseList.Add(noiseToAdd);
-        }
-        Debug.Log("Noise is inaudible! wasn't added to list.");
-        _noiseManager.RemoveActiveNoise(noiseToAdd);//might remove
+        return _audibleNoiseDict.Count <= GetCurrentSensibleStimuliSet().Count;
     }
     private float CalculateSingleNoiseValue(GameObject objToReceive)
     {
@@ -95,88 +97,69 @@ public class HearingComponent : MonoBehaviour
         float distMultiplier = 1 - (iDistance / hearingRange); ///multiplier based on distance in range
 
         NoiseComponent noiseComp = objToReceive.GetComponent<NoiseComponent>();
-
         return noiseComp.GetRawNoiseAmount() * distMultiplier;
     }
-
-    private void CalculateNoiseValues() ///saving each noise value
+    private Stimuli FindLoudestNoiseStimuli()
     {
-        if (audibleNoiseList.Count > 0)
+        float loudestNoise = _audibleNoiseDict.ElementAt(0).Value;
+        int loudestStimuliIndex = 0;
+        for (int i = 1; i < _audibleNoiseDict.Count; i++) ///choose the sound with the highest noise
         {
-            for (int i = 0; i < audibleNoiseList.Count; i++)
+            float iNoiseToCheck = _audibleNoiseDict.ElementAt(i).Value;
+            if (loudestNoise <= iNoiseToCheck)
             {
-                float noiseCalcVal = CalculateSingleNoiseValue(audibleNoiseList[i]);
-                noiseCalculatedValues.Add(noiseCalcVal);
+                loudestNoise = iNoiseToCheck;
+                loudestStimuliIndex = i;
             }
         }
+        return _audibleNoiseDict.ElementAt(loudestStimuliIndex).Key;
     }
-    public Transform ChooseNoiseTarget()
+    private void SelectHearingTarget()
     {
         ///iterates through the list to find the highest noise value
-        CalculateNoiseValues();
-        int index = 0;
-        float noiseNum = noiseCalculatedValues[index];
-        Transform targetPos = audibleNoiseList[index].transform;
-        for (int i = 1; i < audibleNoiseList.Count; i++) ///choose the sound with the highest noise
+
+        if (GetIsAudibleNoisesPresent() && IsNoisesCountMoreThanSenses())
         {
-            float iNoiseNum = noiseCalculatedValues[i];
-            if (noiseNum <= iNoiseNum)
+            Stimuli loudestStimuli = FindLoudestNoiseStimuli();
+            float loudestNoiseVal = _audibleNoiseDict[loudestStimuli];
+            if (loudestNoiseVal > hearingThreshold)
             {
-                noiseNum = iNoiseNum;
-                index = i;
+                _targetNoiseCalculatedValue = loudestNoiseVal;
+                _hearingTarget = loudestStimuli.transform;
+                _bAreNoisesInaudible = false;
+                return;
             }
         }
-        targetPos = audibleNoiseList[index].transform;
-        //Debug.Log($"noiseNum == {noiseNum}!");
-        _noiseManager.ClearActiveNoiseList();
-
-        targetNoiseCalculatedValue = noiseCalculatedValues[index];
-        noiseCalculatedValues.Clear();
-        if (noiseNum > hearingThreshold)
+        if (!_bAreNoisesInaudible)
         {
-            _areNoisesInaudible = false;
-            return targetPos;
-        }
-        targetNoiseCalculatedValue = 0.0f;
-        _areNoisesInaudible = true;
-        return null;
-    }
-    public void ClearAudibleLists() ///reseting the sounds heard
-    {
-        audibleNoiseList.Clear();
-        noiseCalculatedValues.Clear();
-    }
-
-    private bool IsInHearingRange(Transform otherObject) 
-    {
-        float distanceFromOwner = Vector3.Distance(transform.position, otherObject.position);
-        if (distanceFromOwner < hearingRange)
-        {
-            return true;
-        }
-        return false;
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        ///for when hearing range touches a hearable object
-        if (other.gameObject.GetComponent<NoiseComponent>() && !noiseObjsInRange.Contains(other.gameObject))
-        {
-            noiseObjsInRange.Add(other.gameObject);
+            _bAreNoisesInaudible = true;
+            _hearingTarget = null;
+            _targetNoiseCalculatedValue = 0.0f;
         }
     }
-    private void OnTriggerExit(Collider other)
+    public IEnumerator RemoveNoiseDelay(GameObject noiseToRemove) 
     {
-        ///for when hearing range leaves a hearable object
-        if (other.gameObject.GetComponent<NoiseComponent>() && !other.isTrigger)
-        {
-            noiseObjsInRange.Remove(other.gameObject);
-        }
+        yield return new WaitForSeconds(1);
+        RemoveFromAudibleNoiseDict(noiseToRemove);
+        StopCoroutine(RemoveNoiseDelay(noiseToRemove));
     }
 
-    private void OnDrawGizmos()
+    protected override void OnDrawDebug()
     {
         Gizmos.color = Color.cyan;
         Gizmos.DrawWireSphere(transform.position, hearingRange);
+        if (_hearingTarget)
+        {
+            if (_targetNoiseCalculatedValue > hearingThreshold)
+            {
+                Debug.DrawRay(_hearingTarget.position, Vector3.up, UnityEngine.Color.yellow, 0.1f);
+            }
+        }
+    }
+
+    protected override bool IsStimuliSensible(Stimuli stimuli)
+    {
+        float stimuliNoiseVal = CalculateSingleNoiseValue(stimuli.gameObject);
+        return transform.InRangeOf(stimuli.transform, hearingRange) && stimuliNoiseVal > hearingThreshold;
     }
 }

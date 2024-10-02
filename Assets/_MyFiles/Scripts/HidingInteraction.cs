@@ -4,8 +4,7 @@ using UnityEngine;
 public class HidingInteraction : MonoBehaviour, IInterActions
 {
     PlayerControls _player;
-    [SerializeField] private Transform hidePos;
-    Transform _playerLastPos; //will used for remembering the player's location before hiding
+    [SerializeField] private Transform hidePos;     ///Where the player will get transported to when hiding
     [SerializeField][Range(0, 5)] private float detectionRange = 2f; ///Edit sphere collider size on start
     private void Start()
     {
@@ -13,7 +12,7 @@ public class HidingInteraction : MonoBehaviour, IInterActions
         detectionCollider.isTrigger = true;
         detectionCollider.radius = detectionRange;
     }
-    public Transform GetHidePos() { return hidePos; } //(WIP)
+    public Transform GetHidePos() { return hidePos; } 
     public EEntityType GetEntityType()
     {
         return EEntityType.HidingSpace;
@@ -30,26 +29,9 @@ public class HidingInteraction : MonoBehaviour, IInterActions
     {
         if (_player)
         {
-            if (_player.GetIsHiding() == false)
-            {
-                //save player position prior to hiding (WIP)
-                _player.SetPrevHidePos(_player.transform.position);
-                Debug.Log("HIDE HERE");
-            }
             _player.ToggleIsHiding();
-            if (_player.GetIsHiding() == false)//place player at last unhidden position (slerp when possible) (WIP)
-            {
-                //StartCoroutine(PutPlayerAtUnhiddenPos());//(WIP)
-            }
             GameManager.m_Instance.GetUIManager().SetInteractionText(GetInteractionMessage());
         }
-    }
-    private IEnumerator PutPlayerAtUnhiddenPos() //will be used to place player at hiding spot (might move)
-    {
-        yield return new WaitForSeconds(0.25f);
-        Debug.Log("Unhide");
-        //_player.transform.position = _player.GetPrevHidePos();
-        StopCoroutine(PutPlayerAtUnhiddenPos());
     }
     private void OnTriggerEnter(Collider other)
     {

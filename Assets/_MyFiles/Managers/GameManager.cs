@@ -11,20 +11,18 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject playerPrefab;
     [SerializeField] private Transform playerSpawn;
     private GameObject _player;
+    
     [SerializeField] private GameObject GameplayWidgetPrefab;
     private GameObject _GameplayWidget;
 
     [Header("Manager Info [READ ONLY]")] ///able to see manager references
-    [SerializeField] private NoiseManager noiseManager;
     [SerializeField] private EnemyManager enemyManager;
     [SerializeField] private UIManager uIManager;
 
     [Header("Enemy Info")]///for spawning Enemies (passed on to enemy Manager; May change later)
     [SerializeField] private GameObject enemyPrefab;
     [SerializeField] private Transform enemySpawnLoc;
-
-    [Header("Other Info/Options")] /// for visual (may remove or change)
-    [SerializeField] private LayerMask visualMask;
+    [SerializeField] private int enemySpawnCount = 1;
     private void Awake()
     {
         if (m_Instance != null && m_Instance != this)
@@ -40,11 +38,9 @@ public class GameManager : MonoBehaviour
     public GameObject GetPlayer() { return _player; }
     public GameObject GetEnemyPrefab() { return enemyPrefab; }
     public Transform GetEnemySpawnLoc() { return enemySpawnLoc; }
-    public NoiseManager GetNoiseManager() { return noiseManager; }
     public EnemyManager GetEnemyManager() { return enemyManager; }
 
     public UIManager GetUIManager() { return uIManager; }
-    public LayerMask GetVisualMask() {  return visualMask; }
 
     void Start()
     {
@@ -53,20 +49,15 @@ public class GameManager : MonoBehaviour
             _player = Instantiate(playerPrefab, playerSpawn.position, playerSpawn.rotation);
         }
         //add manager spawns here or earlier
-        ClearExtraManagers();
-        CreateNoiseManager();
+        ClearExtraEnemyManagers();
         CreateEnemyManager();
         CreateGameplayWidget();
-    }
-    private void CreateNoiseManager()
-    {
-        if (noiseManager) { return; }
-        noiseManager = gameObject.AddComponent<NoiseManager>();
     }
     private void CreateEnemyManager()
     {
         if (enemyManager) { return; }
         enemyManager = gameObject.AddComponent<EnemyManager>();
+        enemyManager.SetEnemyCount(enemySpawnCount);
     }
     private void CreateGameplayWidget()
     {
@@ -83,17 +74,8 @@ public class GameManager : MonoBehaviour
 
         uIManager = _GameplayWidget.GetComponent<UIManager>();
     }
-    private void ClearExtraManagers()
+    private void ClearExtraEnemyManagers()
     {
-        NoiseManager[] noiseManagerList = this.GetComponents<NoiseManager>();
-        if (noiseManagerList.Length > 0)
-        {
-            Debug.LogError("Multiple NoiseManagers found. Destroying copy...");
-            foreach (NoiseManager noiseManager in noiseManagerList)
-            {
-                Destroy(noiseManager);
-            }
-        }
         EnemyManager[] enemyManagerList = this.GetComponents<EnemyManager>();
         if (enemyManagerList.Length > 0)
         {
@@ -101,16 +83,6 @@ public class GameManager : MonoBehaviour
             foreach (EnemyManager enemyManager in enemyManagerList)
             {
                 Destroy(enemyManager);
-            }
-        }
-        //Will change later
-        UIManager[] uIManagerList = this.GetComponents<UIManager>();
-        if (uIManagerList.Length > 0)
-        {
-            Debug.LogError("Multiple UIManagers found. Destroying copy...");
-            foreach (UIManager uIManager in uIManagerList)
-            {
-                Destroy(uIManager);
             }
         }
     }

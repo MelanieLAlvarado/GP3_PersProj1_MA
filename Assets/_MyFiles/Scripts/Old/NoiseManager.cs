@@ -28,7 +28,7 @@ public class NoiseManager : MonoBehaviour
     }
     private void Start()
     {
-        StartCoroutine(GatherEnemyManagerDelay());
+        //StartCoroutine(GatherEnemyManagerDelay());
     }
     private IEnumerator GatherEnemyManagerDelay() ///delay until enemy manager exists
     {
@@ -36,7 +36,7 @@ public class NoiseManager : MonoBehaviour
         _enemyManager = GameManager.m_Instance.GetEnemyManager();
         if (_enemyManager != null)
         {
-            StopCoroutine(GatherEnemyManagerDelay());
+            //StopCoroutine(GatherEnemyManagerDelay());
         }
         yield return new WaitForEndOfFrame();
     }
@@ -49,9 +49,9 @@ public class NoiseManager : MonoBehaviour
         }
         if (_playerRef.GetComponent<HearingComponent>()) 
         {
-            _playerRef.GetComponent<HearingComponent>().CheckHearingRange(activeNoiseObjs);
+            //_playerRef.GetComponent<HearingComponent>().CheckHearingRange(activeNoiseObjs);
         }
-        _enemyManager.CheckEnemiesHearingRanges(activeNoiseObjs); ///passing into enemy manager to check enemies
+        //_enemyManager.CheckEnemiesHearingRanges(activeNoiseObjs); ///passing into enemy manager to check enemies
     }
     public void RemoveActiveNoise(GameObject objToRemove)
     {
