@@ -50,10 +50,13 @@ public class PlayerControls : MonoBehaviour
     [Header("Interaction info")]
     [SerializeField] private GameObject targetInteractible; ///interactible player has nearby
     [SerializeField] private bool bIsInteracting; ///(for seeing input in editor)
+
+    [Header("Hiding Info")]
     [SerializeField] private bool bIsHiding;     ///(for seeing hiding bool in editor)
-    private bool _bIsHideLerping = false;
-    private Transform _prevHidePos;
     [SerializeField] private float hideLerpSpeed = 2f;
+    [SerializeField] private float releasePlayerHideTime = 0.5f;
+    private bool _bIsHideLerping = false;
+    private Vector3 _prevHidePos;
 
     [Header("Noise Options")] ///Will be passed onto NoiseComponent
     [SerializeField][Range(0, 50)] private float hearingThreshold = 0.0f;
@@ -73,8 +76,8 @@ public class PlayerControls : MonoBehaviour
     public void SetIsDead(bool stateToSet) {  _isDead = stateToSet; }
     public bool GetIsHiding() { return bIsHiding; }
     public bool GetIsHideLerp() { return _bIsHideLerping; }
-    public Transform GetPrevHidePos() { return _prevHidePos; }
-    public void SetPrevHidePos(Transform transToSet) { _prevHidePos = transToSet; }
+    public Vector3 GetPrevHidePos() { return _prevHidePos; }
+    public void SetPrevHidePos(Transform transToSet) { _prevHidePos = transToSet.position; }
 
     public void SetTargetInteractible(GameObject interactionToSet)
     {
@@ -87,13 +90,13 @@ public class PlayerControls : MonoBehaviour
     }
     public void ToggleIsHiding()
     {
-        Debug.Log("toggle Hide!");
-        if (_bIsHideLerping)
+        StopCoroutine(ReleasePlayerLerpCooldown());
+        if (_bIsHideLerping) { return; }
+        if (!bIsHiding)
         {
-            return;
+            _prevHidePos = this.gameObject.transform.position;///saving non-hiding location
         }
         bIsHiding = !bIsHiding;
-        _bIsHideLerping = true;
         if (bIsHiding)
         {
             playerState = EPlayerState.hiding;
@@ -102,10 +105,12 @@ public class PlayerControls : MonoBehaviour
         {
             playerState = EPlayerState.idle;
         }
+        _bIsHideLerping = true;
         if (GetComponent<Stimuli>())
         {
             GetComponent<Stimuli>().SetIsChaseable(!bIsHiding); ///for sense detectiblity
         }
+        StartCoroutine(ReleasePlayerLerpCooldown());
     }
     private void Start()
     {
@@ -129,7 +134,7 @@ public class PlayerControls : MonoBehaviour
         speed = walkSpeed;
 
         playerState = EPlayerState.idle;
-        _currentMultiplier = walkMultiplier;
+        _currentMultiplier = idleMultiplier;
 
         bIsInteracting = false;
         bIsHiding = false;
@@ -139,10 +144,7 @@ public class PlayerControls : MonoBehaviour
 
     private void FixedUpdate()
     {
-        /*if (_prevHidePos)
-        { 
-            Debug.Log($"prev hide pos: { _prevHidePos.position}");
-        }*/
+        Debug.Log($"{_prevHidePos}");
         ProcessNoise();
         if (_bIsHideLerping) 
         {
@@ -164,32 +166,26 @@ public class PlayerControls : MonoBehaviour
     private void ProcessHide()
     {
         ///at this point, the targetinteractible should be the hiding interaction
-        Transform hidePos = targetInteractible.GetComponent<HidingInteraction>().GetHidePos();
-        Transform startPos;
-        Transform endPos;
+        if (targetInteractible == null) { Debug.Log("no interactible"); return; }
+        if (!targetInteractible.GetComponent<HidingInteraction>()) { Debug.Log("no hiding interactible"); return; }
+        Vector3 hidePos = targetInteractible.GetComponent<HidingInteraction>().GetHidePos().position;
+        Vector3 endPos;
         if (bIsHiding)  ///will change to lerp/slerp later.
         {
-            startPos = _prevHidePos;
             endPos = hidePos;
         }
         else
         {
-            startPos = hidePos;
             endPos = _prevHidePos;
         }
-        if (transform.position != endPos.position)
+        if (transform.position != endPos)
         {
-            transform.position = Vector3.Slerp(startPos.position, endPos.position, Time.deltaTime * hideLerpSpeed);
+            transform.position = Vector3.Slerp(transform.position, endPos, Time.deltaTime * hideLerpSpeed);
         }
-        else
-        {
-            _bIsHideLerping = false;
-        }
-        Debug.Log($"Hide lerp is: {_bIsHideLerping}");
     }
     private void ProcessMovement()
     {
-        if (_bIsDefaultMovement == true && !bIsHiding)
+        if (_bIsDefaultMovement == true && !bIsHiding && !_bIsHideLerping)
         {
             Vector2 inputVector = _playerInputActions.Player.Move.ReadValue<Vector2>();
             ProcessMovementType(inputVector);
@@ -337,6 +333,12 @@ public class PlayerControls : MonoBehaviour
         {
             bIsInteracting = false;
         }
+    }
+    private IEnumerator ReleasePlayerLerpCooldown() 
+    {
+        yield return new WaitForSeconds(releasePlayerHideTime);
+        _bIsHideLerping = false;
+        StopCoroutine(ReleasePlayerLerpCooldown());
     }
 }
 public enum EPlayerState { idle, walking, sneaking, sprinting, hiding } //might add more or convert hiding into a bool

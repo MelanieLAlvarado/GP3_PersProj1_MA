@@ -238,12 +238,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enemyState: 0
-  waitTime: 1.5
-  enemyManager: {fileID: 0}
+  waitTime: 1
   playerRef: {fileID: 0}
   targetPos: {fileID: 0}
-  currentSpeed: 0
-  bCanSeePlayer: 0
 --- !u!114 &6298732583009147092
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -286,13 +283,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   bDrawDebug: 1
   forgetTime: 2
-  extraRadius: 2
+  closeRadius: 2
   visualRadius: 15
   visualAngle: 120
   exceptionLayer:
     serializedVersion: 2
     m_Bits: 64
-  bCanSeeVisualTarget: 0
 --- !u!114 &-9021636143937447779
 MonoBehaviour:
   m_ObjectHideFlags: 0

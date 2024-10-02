@@ -283,7 +283,8 @@ MonoBehaviour:
   targetInteractible: {fileID: 0}
   bIsInteracting: 0
   bIsHiding: 0
-  hideLerpSpeed: 2
+  hideLerpSpeed: 5
+  releasePlayerHideTime: 0.7
   hearingThreshold: 0
   idleMultiplier: 0
   sneakMultiplier: 0.2

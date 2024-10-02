@@ -4,7 +4,7 @@ using UnityEngine;
 public class VisionComponent : Sense
 {
     [Header("Field of View Options")]
-    [SerializeField] private float closeRadius = 1.5f;
+    [SerializeField] private float closeRadius = 2f;
     [SerializeField] private float visualRadius;
     [Range(0, 360)][SerializeField] private float visualAngle;
 
@@ -36,21 +36,14 @@ public class VisionComponent : Sense
         RaycastHit hitPoint;
         if (transform.IsBlockedTo(stimuli.transform, Vector3.up + Vector3.forward, out hitPoint, visualRadius))
         {
-            Debug.Log($"{stimuli.gameObject} IS PASSING BLOCK CHECK");
-            if (transform.IsHitExceptionLayer(hitPoint, exceptionLayer)) 
+            if (transform.IsHitExceptionLayer(hitPoint, exceptionLayer))  ///does not get blocked if something is that layer
             {
-                Debug.Log($"Exception Layer!");
                 return CanSeeStimuli(stimuli);
             }
             return false;
         }
 
-
-        Debug.Log($"Flag3 ++ nothing Obscuring {stimuli.gameObject.name}!");
-
-        _bCanSeeVisualTarget = true;
-        _visualTarget = stimuli.gameObject;
-        return true;
+        return CanSeeStimuli(stimuli);
     }
     /*private bool FieldOfViewCheck()
 {

@@ -33,7 +33,7 @@ public class HidingInteraction : MonoBehaviour, IInterActions
             if (_player.GetIsHideLerp() == false && !_player.GetIsHiding())
             {
                 //save player position prior to hiding (WIP)
-                _player.SetPrevHidePos(_player.transform);
+                //_player.SetPrevHidePos(_player.transform);
             }
             _player.ToggleIsHiding();
             GameManager.m_Instance.GetUIManager().SetInteractionText(GetInteractionMessage());

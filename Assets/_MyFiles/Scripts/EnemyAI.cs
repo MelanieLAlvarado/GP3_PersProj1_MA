@@ -27,6 +27,16 @@ public class EnemyAI : MonoBehaviour
     private Vector3 _prevPosition;
     private float _currentSpeed;
 
+    public EEnemyState GetEnemyState() { return enemyState; }
+    public bool IsTargetPlayer() 
+    {
+        if (targetPos && targetPos.GetComponent<PlayerControls>())
+        {
+            return true;
+        }
+        return false; 
+    }
+
     private void Start()
     {
         StartCoroutine(FindPlayerRef());
@@ -145,6 +155,12 @@ public class EnemyAI : MonoBehaviour
         Vector3 currentMove = transform.position - _prevPosition;
         _currentSpeed = currentMove.magnitude/Time.deltaTime;
         _prevPosition = transform.position;
+        if (_currentSpeed == 0 && enemyState != EEnemyState.wait) ///Player is stuck check
+        {
+            Debug.Log("Enemy is stuck!!!");
+            targetPos = null;
+            SetEnemyState(EEnemyState.wait);
+        }
     }
     private void ChasePlayer() 
     {
@@ -183,7 +199,7 @@ public class EnemyAI : MonoBehaviour
         {
             Debug.Log($"CAught Player!");
             playerTargetPos.SetIsDead(true);
-            playerTargetPos.ToggleIsHiding();
+            playerTargetPos.ToggleIsHiding();//Interact with hiding place?
         }
         Attack();
     }
